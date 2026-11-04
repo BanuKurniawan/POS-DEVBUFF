@@ -14,48 +14,55 @@ export const DashboardMetrics: React.FC<DashboardMetricsProps> = ({
   estimatedProfit,
   avgBasket,
 }) => {
+  const items = [
+    {
+      title: "Penjualan Hari Ini",
+      value: formatRupiah(todaySales),
+      subtitle: "Total omset masuk",
+      color: "text-text",
+    },
+    {
+      title: "Jumlah Transaksi",
+      value: String(todayTransactions),
+      subtitle: "Struk belanja selesai",
+      color: "text-accent",
+    },
+    {
+      title: "Estimasi Laba Kotor",
+      value: formatRupiah(estimatedProfit),
+      subtitle: "Omset dikurangi modal",
+      color: "text-positive",
+    },
+    {
+      title: "Rata-rata Belanja",
+      value: formatRupiah(avgBasket),
+      subtitle: "Per transaksi pelanggan",
+      color: "text-text",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 bg-surface border border-border rounded-md divide-x divide-y lg:divide-y-0 divide-border">
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-xs text-text-muted font-medium">Penjualan Hari Ini</span>
-        <div className="mt-2">
-          <span className="text-2xl font-bold text-text font-mono num tracking-tight">
-            {formatRupiah(todaySales)}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-0 bg-transparent sm:bg-surface sm:border sm:border-border sm:rounded-md sm:divide-x divide-border">
+      {items.map((item, idx) => (
+        <div
+          key={idx}
+          className="p-3 sm:p-4 bg-surface sm:bg-transparent border sm:border-0 border-border rounded-md sm:rounded-none flex flex-col justify-between"
+        >
+          <span className="text-[11px] sm:text-xs text-text-muted font-medium truncate">
+            {item.title}
           </span>
-          <span className="text-[11px] text-text-muted block mt-0.5">Total omset masuk</span>
+          <div className="mt-1.5 sm:mt-2">
+            <span
+              className={`text-base sm:text-lg lg:text-2xl font-bold font-mono num tracking-tight block truncate ${item.color}`}
+            >
+              {item.value}
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-text-muted block mt-0.5 truncate">
+              {item.subtitle}
+            </span>
+          </div>
         </div>
-      </div>
-
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-xs text-text-muted font-medium">Jumlah Transaksi</span>
-        <div className="mt-2">
-          <span className="text-2xl font-bold text-text font-mono num tracking-tight">
-            {todayTransactions}
-          </span>
-          <span className="text-[11px] text-text-muted block mt-0.5">Struk belanja selesai</span>
-        </div>
-      </div>
-
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-xs text-text-muted font-medium">Estimasi Laba Kotor</span>
-        <div className="mt-2">
-          <span className="text-2xl font-bold text-text font-mono num tracking-tight">
-            {formatRupiah(estimatedProfit)}
-          </span>
-          <span className="text-[11px] text-text-muted block mt-0.5">Omset dikurangi modal</span>
-        </div>
-      </div>
-
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-xs text-text-muted font-medium">Rata-rata Belanja</span>
-        <div className="mt-2">
-          <span className="text-2xl font-bold text-text font-mono num tracking-tight">
-            {formatRupiah(avgBasket)}
-          </span>
-          <span className="text-[11px] text-text-muted block mt-0.5">Per transaksi pelanggan</span>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
-

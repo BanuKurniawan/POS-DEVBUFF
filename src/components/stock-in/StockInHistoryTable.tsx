@@ -98,7 +98,7 @@ export const StockInHistoryTable: React.FC<StockInHistoryTableProps> = ({
         leftIcon={<Search className="w-4 h-4" />}
       />
 
-      {/* Table */}
+      {/* Movements Content */}
       {movements.length === 0 ? (
         <EmptyState
           title="Tidak Ada Riwayat"
@@ -106,67 +106,130 @@ export const StockInHistoryTable: React.FC<StockInHistoryTableProps> = ({
           icon={<Package className="w-5 h-5" />}
         />
       ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Waktu</TableHead>
-                <TableHead>Produk</TableHead>
-                <TableHead>Tipe</TableHead>
-                <TableHead alignRight>Jumlah</TableHead>
-                <TableHead alignRight>Stok Akhir</TableHead>
-                <TableHead>Catatan / Petugas</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {movements.map((m) => {
-                const isIncoming = m.type === "IN";
+        <>
+          {/* Mobile Card List (sm:hidden) */}
+          <div className="sm:hidden space-y-2.5">
+            {movements.map((m) => {
+              const isIncoming = m.type === "IN";
+              return (
+                <div
+                  key={m.id}
+                  className="bg-surface-subtle border border-border rounded-md p-3 space-y-2 text-xs"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-text text-sm leading-tight truncate">
+                        {m.productName}
+                      </p>
+                      <p className="text-[11px] text-text-muted font-mono">{m.sku}</p>
+                    </div>
+                    <Badge variant={isIncoming ? "success" : "neutral"} size="sm">
+                      <span className="flex items-center gap-1">
+                        {isIncoming ? (
+                          <ArrowDownLeft className="w-3 h-3 text-positive" />
+                        ) : (
+                          <ArrowUpRight className="w-3 h-3 text-text-muted" />
+                        )}
+                        <span>{isIncoming ? "MASUK" : "KELUAR"}</span>
+                      </span>
+                    </Badge>
+                  </div>
 
-                return (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-text-muted font-mono num text-xs whitespace-nowrap">
-                      {formatDate(m.createdAt)} {formatTime(m.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-semibold text-text leading-tight">{m.productName}</div>
-                      <span className="text-[11px] text-text-muted font-mono num">{m.sku}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={isIncoming ? "success" : "neutral"}
-                        size="sm"
+                  <div className="grid grid-cols-2 gap-2 py-1.5 px-2 bg-surface rounded border border-border text-center">
+                    <div>
+                      <span className="text-[10px] text-text-muted block">Jumlah Mutasi</span>
+                      <span
+                        className={`font-bold font-mono num text-sm ${
+                          isIncoming ? "text-positive" : "text-text"
+                        }`}
                       >
-                        <span className="flex items-center gap-1">
-                          {isIncoming ? (
-                            <ArrowDownLeft className="w-3 h-3 text-positive" />
-                          ) : (
-                            <ArrowUpRight className="w-3 h-3 text-text-muted" />
-                          )}
-                          <span>{isIncoming ? "MASUK" : "KELUAR"}</span>
-                        </span>
-                      </Badge>
-                    </TableCell>
-                    <TableCell
-                      numeric
-                      className={`font-mono num font-bold ${
-                        isIncoming ? "text-positive" : "text-text"
-                      }`}
-                    >
-                      {isIncoming ? `+${m.quantity}` : `-${m.quantity}`} {m.unit}
-                    </TableCell>
-                    <TableCell numeric className="font-mono num font-semibold text-text">
-                      {m.stockAfter} {m.unit}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs text-text">{m.notes || "-"}</div>
-                      <span className="text-[10px] text-text-muted block">Oleh: {m.userName}</span>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                        {isIncoming ? `+${m.quantity}` : `-${m.quantity}`} {m.unit}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-text-muted block">Stok Akhir</span>
+                      <span className="font-bold text-text font-mono num text-sm">
+                        {m.stockAfter} {m.unit}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-text-muted pt-1 border-t border-border">
+                    <span className="truncate max-w-[160px] text-text-muted">
+                      {m.notes || "Tanpa catatan"} ({m.userName})
+                    </span>
+                    <span className="font-mono text-[10px]">
+                      {formatDate(m.createdAt)} {formatTime(m.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table (hidden sm:block) */}
+          <div className="hidden sm:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Produk</TableHead>
+                  <TableHead>Tipe</TableHead>
+                  <TableHead alignRight>Jumlah</TableHead>
+                  <TableHead alignRight>Stok Akhir</TableHead>
+                  <TableHead>Catatan / Petugas</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {movements.map((m) => {
+                  const isIncoming = m.type === "IN";
+
+                  return (
+                    <TableRow key={m.id}>
+                      <TableCell className="text-text-muted font-mono num text-xs whitespace-nowrap">
+                        {formatDate(m.createdAt)} {formatTime(m.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold text-text leading-tight">{m.productName}</div>
+                        <span className="text-[11px] text-text-muted font-mono num">{m.sku}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={isIncoming ? "success" : "neutral"}
+                          size="sm"
+                        >
+                          <span className="flex items-center gap-1">
+                            {isIncoming ? (
+                              <ArrowDownLeft className="w-3 h-3 text-positive" />
+                            ) : (
+                              <ArrowUpRight className="w-3 h-3 text-text-muted" />
+                            )}
+                            <span>{isIncoming ? "MASUK" : "KELUAR"}</span>
+                          </span>
+                        </Badge>
+                      </TableCell>
+                      <TableCell
+                        numeric
+                        className={`font-mono num font-bold ${
+                          isIncoming ? "text-positive" : "text-text"
+                        }`}
+                      >
+                        {isIncoming ? `+${m.quantity}` : `-${m.quantity}`} {m.unit}
+                      </TableCell>
+                      <TableCell numeric className="font-mono num font-semibold text-text">
+                        {m.stockAfter} {m.unit}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs text-text">{m.notes || "-"}</div>
+                        <span className="text-[10px] text-text-muted block">Oleh: {m.userName}</span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
       {/* Pagination Footer */}

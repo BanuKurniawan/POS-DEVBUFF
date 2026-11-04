@@ -30,7 +30,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   outOfStockCount,
 }) => {
   return (
-    <div className="bg-surface p-3.5 rounded-md border border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div className="bg-surface p-3 sm:p-3.5 rounded-md border border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
       <div className="flex-1 w-full sm:max-w-xs">
         <Input
           placeholder="Cari nama, SKU, atau barcode..."
@@ -40,8 +40,8 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
         />
       </div>
 
-      <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-        <div className="w-40 shrink-0">
+      <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-none">
+        <div className="w-full xs:w-40 shrink-0">
           <Select
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
@@ -55,11 +55,11 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
           </Select>
         </div>
 
-        <div className="inline-flex items-center p-0.5 bg-surface-subtle border border-border rounded-md shrink-0">
+        <div className="inline-flex items-center p-0.5 bg-surface-subtle border border-border rounded-md shrink-0 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => onStockFilterChange("all")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors ${
+            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors whitespace-nowrap ${
               stockFilter === "all"
                 ? "bg-surface text-text shadow-2xs"
                 : "text-text-muted hover:text-text"
@@ -70,7 +70,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
           <button
             type="button"
             onClick={() => onStockFilterChange("available")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors ${
+            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors whitespace-nowrap ${
               stockFilter === "available"
                 ? "bg-surface text-text shadow-2xs"
                 : "text-text-muted hover:text-text"
@@ -81,7 +81,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
           <button
             type="button"
             onClick={() => onStockFilterChange("low")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors ${
+            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors whitespace-nowrap ${
               stockFilter === "low"
                 ? "bg-surface text-text shadow-2xs"
                 : "text-text-muted hover:text-text"
@@ -92,7 +92,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
           <button
             type="button"
             onClick={() => onStockFilterChange("out")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors ${
+            className={`px-2.5 py-1 text-xs font-semibold rounded-sm transition-colors whitespace-nowrap ${
               stockFilter === "out"
                 ? "bg-surface text-text shadow-2xs"
                 : "text-text-muted hover:text-text"

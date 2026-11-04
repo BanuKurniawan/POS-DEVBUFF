@@ -560,28 +560,28 @@ export default function PosPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-ground text-text antialiased overflow-hidden select-none">
       {/* Top Header */}
-      <header className="h-[52px] bg-surface border-b border-border px-3 sm:px-6 flex items-center justify-between shrink-0 no-print z-10">
+      <header className="h-[52px] bg-surface border-b border-border px-3 sm:px-5 flex items-center justify-between shrink-0 no-print z-10 gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div className="h-8 w-8 rounded-md bg-surface-subtle p-1 flex items-center justify-center shrink-0 border border-border">
             <Image
               src="/KasirKITA.png"
               alt="KasirKITA"
-              width={26}
-              height={26}
+              width={24}
+              height={24}
               className="object-contain"
               priority
             />
           </div>
           <div className="leading-tight min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <h1 className="text-xs sm:text-sm font-bold tracking-tight text-text truncate max-w-[120px] xs:max-w-[160px] sm:max-w-xs">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xs sm:text-sm font-bold tracking-tight text-text truncate max-w-[110px] xs:max-w-[150px] sm:max-w-xs">
                 {storeSetting.storeName}
               </h1>
               <Badge variant="success" size="sm" showDefaultIcon className="hidden sm:inline-flex">
                 Kasir
               </Badge>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-text-muted truncate">{currentTimeStr}</p>
+            <p className="text-[10px] text-text-muted truncate font-mono">{currentTimeStr}</p>
           </div>
         </div>
 
@@ -610,13 +610,13 @@ export default function PosPage() {
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Mobile Cart Trigger */}
           <button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
             title="Buka Keranjang Belanja"
-            className="lg:hidden relative p-1.5 rounded-md border border-border bg-surface text-text hover:bg-surface-subtle transition-colors flex items-center justify-center"
+            className="lg:hidden relative p-1.5 rounded-md border border-border bg-surface text-text hover:bg-surface-subtle transition-colors flex items-center justify-center shrink-0"
           >
             <ShoppingCart className="w-4 h-4 text-text" />
             {totalCartItems > 0 && (
@@ -627,28 +627,25 @@ export default function PosPage() {
           </button>
 
           {/* Held Orders Button */}
-          <button
-            onClick={() => setIsRecallModalOpen(true)}
-            title="Daftar Transaksi Tertahan"
-            className={`relative flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-md border transition-all ${heldTransactions.length > 0
-                ? "bg-warning-bg border-warning-border text-warning-text hover:bg-warning-border/40"
-                : "bg-surface border-border text-text-muted hover:text-text hover:bg-surface-subtle"
-              }`}
-          >
-            <FolderArchive className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tertahan</span>
-            {heldTransactions.length > 0 && (
-              <span className="px-1.5 py-0.2 bg-warning-border text-warning-text rounded font-mono text-[10px] font-bold">
+          {heldTransactions.length > 0 && (
+            <button
+              onClick={() => setIsRecallModalOpen(true)}
+              title="Daftar Transaksi Tertahan"
+              className="relative flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-md border bg-warning-bg border-warning-border text-warning-text hover:bg-warning-border/40 transition-all shrink-0"
+            >
+              <FolderArchive className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tertahan</span>
+              <span className="px-1 py-0.2 bg-warning-border text-warning-text rounded font-mono text-[10px] font-bold">
                 {heldTransactions.length}
               </span>
-            )}
-          </button>
+            </button>
+          )}
 
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
             title={soundEnabled ? "Suara Beep Aktif" : "Suara Beep Mati"}
-            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors"
+            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors hidden xs:flex items-center justify-center shrink-0"
           >
             {soundEnabled ? (
               <Volume2 className="w-4 h-4 text-accent" />
@@ -661,16 +658,16 @@ export default function PosPage() {
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? "Keluar Layar Penuh" : "Mode Layar Penuh"}
-            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors hidden md:flex"
+            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors hidden md:flex items-center justify-center shrink-0"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
 
-          {/* Shortcuts Help */}
+          {/* Shortcuts Help (Desktop only) */}
           <button
             onClick={() => setIsShortcutsModalOpen(true)}
             title="Bantuan Tombol Pintas"
-            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors"
+            className="p-1.5 rounded-md border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-subtle transition-colors hidden sm:flex items-center justify-center shrink-0"
           >
             <HelpCircle className="w-4 h-4" />
           </button>
@@ -679,7 +676,8 @@ export default function PosPage() {
           {(currentUser?.role === "OWNER" || currentUser?.role === "ADMIN") && (
             <Link
               href="/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface hover:bg-surface-subtle text-text text-xs font-semibold rounded-md border border-border transition-colors"
+              title="Kembali ke Dashboard Owner"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface hover:bg-surface-subtle text-text text-xs font-semibold rounded-md border border-border transition-colors shrink-0"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-text-muted" />
               <span className="hidden md:inline">Dashboard</span>
@@ -690,7 +688,7 @@ export default function PosPage() {
           <button
             onClick={handleLogout}
             title="Keluar Akun"
-            className="text-text-muted hover:text-negative p-1.5 rounded-md border border-border bg-surface hover:bg-surface-subtle transition-colors"
+            className="text-text-muted hover:text-negative p-1.5 rounded-md border border-border bg-surface hover:bg-surface-subtle transition-colors shrink-0"
           >
             <LogOut className="w-4 h-4" />
           </button>

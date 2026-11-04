@@ -42,12 +42,12 @@ export const TransactionFilterToolbar: React.FC<TransactionFilterToolbarProps> =
     <div className="bg-surface p-3.5 rounded-md border border-border space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Time Filter Pills */}
-        <div className="inline-flex items-center p-0.5 bg-surface-subtle border border-border rounded-md shrink-0 flex-wrap">
+        <div className="flex items-center p-0.5 bg-surface-subtle border border-border rounded-md shrink-0 overflow-x-auto scrollbar-none max-w-full">
           {filterOptions.map((f) => (
             <button
               key={f.id}
               onClick={() => onFilterChange(f.id)}
-              className={`px-3 py-1 text-xs font-semibold rounded-sm transition-colors ${
+              className={`px-3 py-1 text-xs font-semibold rounded-sm transition-colors whitespace-nowrap ${
                 filterType === f.id
                   ? "bg-surface text-text shadow-2xs font-bold"
                   : "text-text-muted hover:text-text"
@@ -71,25 +71,25 @@ export const TransactionFilterToolbar: React.FC<TransactionFilterToolbarProps> =
 
       {/* Custom Date Range Picker */}
       {filterType === "custom" && (
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border-subtle text-xs">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-text-muted" />
-            <span className="text-text-muted font-medium">Dari:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-border-subtle text-xs">
+          <div className="flex items-center gap-1.5 flex-1">
+            <Calendar className="w-3.5 h-3.5 text-text-muted shrink-0" />
+            <span className="text-text-muted font-medium shrink-0">Dari:</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="px-2.5 py-1 bg-surface border border-border rounded-md text-xs font-mono num focus:border-text focus:outline-hidden"
+              className="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-xs font-mono num focus:border-text focus:outline-hidden"
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-text-muted font-medium">Sampai:</span>
+          <div className="flex items-center gap-1.5 flex-1">
+            <span className="text-text-muted font-medium shrink-0">Sampai:</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
-              className="px-2.5 py-1 bg-surface border border-border rounded-md text-xs font-mono num focus:border-text focus:outline-hidden"
+              className="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-xs font-mono num focus:border-text focus:outline-hidden"
             />
           </div>
 
@@ -98,6 +98,7 @@ export const TransactionFilterToolbar: React.FC<TransactionFilterToolbarProps> =
             size="sm"
             onClick={onApplyCustomDate}
             isLoading={isPending}
+            className="w-full sm:w-auto"
           >
             Terapkan
           </Button>

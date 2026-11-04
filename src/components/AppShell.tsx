@@ -136,35 +136,47 @@ export default function AppShell({ children, pageTitle }: AppShellProps) {
       ? "info"
       : "neutral";
 
-  const renderNavContent = () => (
+  const renderNavContent = (isMobileDrawer: boolean = false) => (
     <div className="flex flex-col h-full justify-between">
       {/* Brand & Store Profile */}
       <div className="p-3 border-b border-border">
-        <div className="flex items-center gap-2.5 px-2 py-1.5">
-          {storeLogoUrl ? (
-            <div className="w-8 h-8 rounded-md overflow-hidden shrink-0 border border-border bg-surface flex items-center justify-center relative">
-              <Image
-                src={storeLogoUrl}
-                alt={storeName}
-                width={32}
-                height={32}
-                className="w-full h-full object-contain p-0.5"
-                unoptimized
-              />
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {storeLogoUrl ? (
+              <div className="w-8 h-8 rounded-md overflow-hidden shrink-0 border border-border bg-surface flex items-center justify-center relative">
+                <Image
+                  src={storeLogoUrl}
+                  alt={storeName}
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-contain p-0.5"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 select-none">
+                {storeName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <span className="font-bold text-sm text-text block truncate tracking-tight">
+                {storeName}
+              </span>
+              <span className="text-[11px] text-text-muted block truncate">
+                KasirKITA Sembako
+              </span>
             </div>
-          ) : (
-            <div className="w-8 h-8 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shrink-0 select-none">
-              {storeName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <span className="font-bold text-sm text-text block truncate tracking-tight">
-              {storeName}
-            </span>
-            <span className="text-[11px] text-text-muted block truncate">
-              KasirKITA Sembako
-            </span>
           </div>
+
+          {isMobileDrawer && (
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-1 rounded-sm text-text-muted hover:text-text hover:bg-surface-subtle"
+              aria-label="Tutup menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -257,19 +269,11 @@ export default function AppShell({ children, pageTitle }: AppShellProps) {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-[1px]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <aside className="relative w-72 max-w-[80vw] bg-surface-sidebar h-full border-r border-border flex flex-col z-10 shadow-xl">
-            <div className="p-2 border-b border-border flex justify-end">
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 rounded-sm text-text-muted hover:text-text"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            {renderNavContent()}
+          <aside className="relative w-72 max-w-[85vw] bg-surface-sidebar h-full border-r border-border flex flex-col z-10 shadow-2xl animate-in slide-in-from-left duration-200">
+            {renderNavContent(true)}
           </aside>
         </div>
       )}
@@ -277,33 +281,34 @@ export default function AppShell({ children, pageTitle }: AppShellProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-ground">
         {/* Clean Header */}
-        <header className="h-[52px] bg-surface border-b border-border px-4 sm:px-6 flex items-center justify-between shrink-0 z-10">
-          <div className="flex items-center gap-3">
+        <header className="h-[52px] bg-surface border-b border-border px-3 sm:px-6 flex items-center justify-between shrink-0 z-10 gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-1.5 rounded-md text-text-muted hover:text-text hover:bg-surface-subtle border border-border"
+              className="md:hidden p-1.5 rounded-md text-text-muted hover:text-text hover:bg-surface-subtle border border-border shrink-0"
               aria-label="Buka menu navigasi"
             >
               <Menu className="w-4 h-4" />
             </button>
-            <h1 className="text-sm sm:text-base font-bold text-text tracking-tight">
+            <h1 className="text-sm sm:text-base font-bold text-text tracking-tight truncate">
               {pageTitle}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/pos"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-semibold rounded-md shadow-2xs hover:bg-accent-hover transition-colors select-none"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-semibold rounded-md shadow-2xs hover:bg-accent-hover transition-colors select-none shrink-0"
             >
               <Store className="w-3.5 h-3.5" />
-              <span>Buka Kasir</span>
+              <span className="hidden xs:inline">Buka Kasir</span>
+              <span className="xs:hidden">Kasir</span>
             </Link>
           </div>
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
       </div>
     </div>
   );
