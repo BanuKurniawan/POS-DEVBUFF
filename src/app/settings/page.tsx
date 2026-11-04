@@ -1,37 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, startTransition } from "react";
 import AppShell from "@/components/AppShell";
-import { getStoreSetting, updateStoreSetting, StoreSettingDTO } from "@/app/actions/settings";
-import {
-  Store,
-  MapPin,
-  Phone,
-  Receipt,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  ShieldAlert,
-  Printer,
-  ImagePlus,
-  Trash2,
-  Upload,
-  Loader2,
-} from "lucide-react";
+import { getStoreSetting, updateStoreSetting } from "@/app/actions/settings";
+import { getEmployees } from "@/app/actions/employees";
+import { StoreSettingDTO, EmployeeDTO } from "@/types";
+import { Store, Users } from "lucide-react";
 import { DEMO_ACCOUNTS, SessionUser } from "@/lib/auth";
+import { Toast } from "@/components/ui/Toast";
+import EmployeeManagementSection from "@/components/dashboard/EmployeeManagementSection";
+import {
+  StoreLogoUploader,
+  StoreProfileForm,
+  StoreReceiptPreview,
+} from "@/components/settings";
 
 export default function SettingsPage() {
   const [currentUser, setCurrentUser] = useState<SessionUser>(DEMO_ACCOUNTS[0]);
+  const [activeTab, setActiveTab] = useState<"store" | "employees">("store");
+  const [employees, setEmployees] = useState<EmployeeDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
-  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<StoreSettingDTO>({
     id: "default",
-    storeName: "Toko Berkah UMKM",
+    storeName: "Toko Sembako Berkah",
     address: "Jl. Gatot Subroto No. 42, Jakarta",
     phoneNumber: "0812-3456-7890",
     logoUrl: "",
@@ -42,7 +38,10 @@ export default function SettingsPage() {
     const saved = localStorage.getItem("kasir_session");
     if (saved) {
       try {
-        setCurrentUser(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        startTransition(() => {
+          setCurrentUser(parsed);
+        });
       } catch (e) {
         console.error(e);
       }
@@ -50,382 +49,264 @@ export default function SettingsPage() {
       localStorage.setItem("kasir_session", JSON.stringify(DEMO_ACCOUNTS[0]));
     }
 
-    const loadSettings = async () => {
+    const loadData = async () => {
       try {
-        const data = await getStoreSetting();
-        setFormData(data);
-        setLogoPreview(data.logoUrl || "");
+        const [settingData, employeeList] = await Promise.all([
+          getStoreSetting(),
+          getEmployees(),
+        ]);
+        startTransition(() => {
+          setFormData(settingData);
+          setLogoPreview(settingData.logoUrl || "");
+          setEmployees(employeeList);
+        });
       } catch (e) {
         console.error(e);
       } finally {
-        setIsLoading(false);
+        startTransition(() => {
+          setIsLoading(false);
+        });
       }
     };
-    loadSettings();
+    loadData();
   }, []);
 
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validasi format file
     const ext = (file.name.split(".").pop() || "").toLowerCase();
     const validExtensions = ["png", "jpg", "jpeg", "webp", "gif", "svg"];
     const isValidFormat = file.type.startsWith("image/") || validExtensions.includes(ext);
 
     if (!isValidFormat) {
-      setStatusMessage({ type: "error", text: "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WebP, atau SVG." });
+      setStatusMessage({
+        type: "error",
+        text: "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WebP, GIF, atau SVG.",
+      });
       return;
     }
 
-    // Batas file 5 MB
     if (file.size > 5 * 1024 * 1024) {
-      setStatusMessage({ type: "error", text: "Ukuran file terlalu besar. Maksimum 5 MB." });
+      setStatusMessage({
+        type: "error",
+        text: "Ukuran file terlalu besar. Maksimum ukuran logo adalah 5 MB.",
+      });
       return;
     }
 
-    // Preview lokal instan
-    const localUrl = URL.createObjectURL(file);
-    setLogoPreview(localUrl);
     setIsUploadingLogo(true);
     setStatusMessage(null);
 
     try {
-      const fd = new FormData();
-      fd.append("logo", file);
-      const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+
+      const res = await fetch("/api/upload-logo", {
+        method: "POST",
+        body: uploadData,
+      });
+
       const json = await res.json();
 
-      if (json.success && json.logoUrl) {
-        setFormData((prev) => ({ ...prev, logoUrl: json.logoUrl }));
-        setLogoPreview(json.logoUrl);
-        setStatusMessage({ type: "success", text: "Logo toko berhasil diupload & disimpan!" });
-        window.dispatchEvent(new CustomEvent("store_settings_updated", { detail: { logoUrl: json.logoUrl } }));
-      } else {
-        setStatusMessage({ type: "error", text: json.message || "Gagal mengupload logo." });
-        setLogoPreview(formData.logoUrl || "");
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal mengunggah logo.");
       }
-    } catch {
-      setStatusMessage({ type: "error", text: "Koneksi gagal saat mengupload logo. Silakan coba lagi." });
-      setLogoPreview(formData.logoUrl || "");
+
+      setLogoPreview(json.url);
+      setFormData((prev) => ({ ...prev, logoUrl: json.url }));
+
+      await updateStoreSetting({
+        storeName: formData.storeName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+        receiptFooter: formData.receiptFooter,
+        logoUrl: json.url,
+      });
+
+      window.dispatchEvent(
+        new CustomEvent("store_settings_updated", {
+          detail: { logoUrl: json.url },
+        })
+      );
+
+      setStatusMessage({
+        type: "success",
+        text: "Logo toko berhasil diperbarui.",
+      });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Terjadi kesalahan upload logo.",
+      });
     } finally {
       setIsUploadingLogo(false);
     }
   };
 
   const handleRemoveLogo = async () => {
-    setLogoPreview("");
-    setFormData((prev) => ({ ...prev, logoUrl: "" }));
-    await updateStoreSetting({ ...formData, logoUrl: "" });
-    setStatusMessage({ type: "success", text: "Logo toko berhasil dihapus." });
-    if (logoInputRef.current) logoInputRef.current.value = "";
-    window.dispatchEvent(new CustomEvent("store_settings_updated", { detail: { logoUrl: "" } }));
+    if (!confirm("Hapus logo toko?")) return;
+    setIsUploadingLogo(true);
+    try {
+      setLogoPreview("");
+      setFormData((prev) => ({ ...prev, logoUrl: "" }));
+
+      await updateStoreSetting({
+        storeName: formData.storeName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+        receiptFooter: formData.receiptFooter,
+        logoUrl: "",
+      });
+
+      window.dispatchEvent(
+        new CustomEvent("store_settings_updated", {
+          detail: { logoUrl: "" },
+        })
+      );
+
+      setStatusMessage({
+        type: "success",
+        text: "Logo toko berhasil dihapus.",
+      });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Gagal menghapus logo.",
+      });
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentUser.role !== "OWNER") {
+      setStatusMessage({
+        type: "error",
+        text: "Hanya akun Owner yang memiliki akses mengubah identitas toko.",
+      });
+      return;
+    }
+
     setIsSaving(true);
     setStatusMessage(null);
 
     try {
-      const res = await updateStoreSetting(formData);
-      if (res.success && res.setting) {
-        setFormData(res.setting);
-        setStatusMessage({ type: "success", text: res.message });
-        window.dispatchEvent(new CustomEvent("store_settings_updated", { detail: res.setting }));
+      const res = await updateStoreSetting({
+        storeName: formData.storeName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+        receiptFooter: formData.receiptFooter,
+        logoUrl: formData.logoUrl,
+      });
+
+      if (res.success) {
+        setStatusMessage({
+          type: "success",
+          text: "Pengaturan profil toko & format struk berhasil disimpan.",
+        });
+        window.dispatchEvent(
+          new CustomEvent("store_settings_updated", {
+            detail: { storeName: formData.storeName, logoUrl: formData.logoUrl },
+          })
+        );
       } else {
-        setStatusMessage({ type: "error", text: res.message });
+        setStatusMessage({
+          type: "error",
+          text: res.message || "Gagal menyimpan pengaturan.",
+        });
       }
-    } catch (err: any) {
-      setStatusMessage({ type: "error", text: err?.message || "Gagal menyimpan pengaturan." });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Terjadi kendala saat menghubungi database.",
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Selalu izinkan akses edit bagi owner / admin / sesi demo
-  const isOwner = !currentUser || currentUser.role === "OWNER" || currentUser.role === "ADMIN";
+  const isOwner = currentUser.role === "OWNER";
 
   return (
-    <AppShell pageTitle="Pengaturan Profil Toko & Struk">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {!isOwner && !isLoading && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 shadow-xs">
-            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <h3 className="text-sm font-bold">Halaman ini khusus untuk pemilik toko</h3>
-              <p className="text-xs text-amber-700 mt-1">
-                Kamu masuk sebagai <strong>{currentUser?.name || "Pengguna"}</strong>. Hanya pemilik toko yang bisa mengubah profil dan pengaturan ini.
-              </p>
-            </div>
-          </div>
+    <AppShell pageTitle="Pengaturan Toko & Kasir">
+      <div className="space-y-4 max-w-7xl mx-auto">
+        {statusMessage && (
+          <Toast
+            type={statusMessage.type}
+            message={statusMessage.text}
+            onClose={() => setStatusMessage(null)}
+          />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Kolom Kiri: Form Pengaturan */}
-          <div className="lg:col-span-7 space-y-5">
-            {/* Card: Logo Toko */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <ImagePlus className="w-4 h-4 text-slate-600" />
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900">Logo Toko</h2>
-                  <p className="text-xs text-slate-500">Tampil di sidebar, struk, dan header aplikasi.</p>
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-5">
-                  {/* Preview Logo */}
-                  <div 
-                    onClick={() => !isUploadingLogo && logoInputRef.current?.click()}
-                    title="Klik untuk memilih logo baru"
-                    className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 relative cursor-pointer group transition-colors"
-                  >
-                    {isUploadingLogo ? (
-                      <Loader2 className="w-7 h-7 text-emerald-500 animate-spin" />
-                    ) : logoPreview ? (
-                      <img src={logoPreview} alt="Logo Toko" className="w-full h-full object-contain p-1" />
-                    ) : (
-                      <Store className="w-8 h-8 text-slate-300 group-hover:text-emerald-500 transition-colors" />
-                    )}
-                  </div>
-
-                  {/* Upload Actions */}
-                  <div className="flex-1 space-y-2">
-                    <p className="text-xs text-slate-600 font-medium">
-                      Format: PNG, JPG, JPEG, WebP, atau SVG • Maks. 5 MB
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Logo ini akan muncul di sidebar dan di bagian atas struk belanja toko kamu.
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <input
-                        ref={logoInputRef}
-                        id="logo-upload-input"
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-                        className="hidden"
-                        onChange={handleLogoFileChange}
-                        disabled={isUploadingLogo}
-                      />
-                      <label
-                        htmlFor="logo-upload-input"
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                          !isUploadingLogo
-                            ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-xs"
-                            : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                        }`}
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        {isUploadingLogo ? "Sedang upload..." : "Pilih Foto Logo"}
-                      </label>
-                      {logoPreview && isOwner && (
-                        <button
-                          type="button"
-                          onClick={handleRemoveLogo}
-                          disabled={isUploadingLogo}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-rose-200 text-rose-600 hover:bg-rose-50 transition-all cursor-pointer disabled:opacity-40"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Hapus
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card: Identitas Toko */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-200 bg-slate-50">
-                <h2 className="text-sm font-bold text-slate-900">Identitas Toko & Informasi Struk</h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Informasi ini akan tercetak otomatis pada header & footer struk kasir.
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                {statusMessage && (
-                  <div
-                    className={`p-3 text-xs rounded-lg flex items-center gap-2 ${
-                      statusMessage.type === "success"
-                        ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-                        : "bg-rose-50 border border-rose-200 text-rose-700"
-                    }`}
-                  >
-                    {statusMessage.type === "success" ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    )}
-                    <span>{statusMessage.text}</span>
-                  </div>
-                )}
-
-                {/* Nama Toko */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Nama Toko / Usaha <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Store className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      disabled={!isOwner || isSaving}
-                      value={formData.storeName}
-                      onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-                      placeholder="Contoh: Toko Berkah UMKM"
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors disabled:bg-slate-100 disabled:text-slate-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Alamat */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat Lengkap Toko</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <textarea
-                      rows={3}
-                      disabled={!isOwner || isSaving}
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Jl. Gatot Subroto No. 42, RT 01/RW 02, Jakarta Selatan"
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors disabled:bg-slate-100 disabled:text-slate-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Telepon */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Telepon / WhatsApp</label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      disabled={!isOwner || isSaving}
-                      value={formData.phoneNumber}
-                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                      placeholder="Contoh: 0812-3456-7890"
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors disabled:bg-slate-100 disabled:text-slate-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Receipt Footer */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Pesan Catatan Kaki Struk</label>
-                  <div className="relative">
-                    <Receipt className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      disabled={!isOwner || isSaving}
-                      value={formData.receiptFooter}
-                      onChange={(e) => setFormData({ ...formData, receiptFooter: e.target.value })}
-                      placeholder="Contoh: Terima kasih atas kunjungan Anda!"
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors disabled:bg-slate-100 disabled:text-slate-500"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Pesan ucapan penutup yang tercetak di bagian paling bawah struk.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-200">
-                  <button
-                    type="submit"
-                    disabled={!isOwner || isSaving}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>{isSaving ? "Menyimpan..." : "Simpan Perubahan"}</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          {/* Kolom Kanan: Live Preview Struk */}
-          <div className="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Printer className="w-4 h-4 text-slate-700" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase">Live Preview Struk Kasir</h3>
-              </div>
-              <span className="text-[10px] font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">
-                58mm / 80mm
+        {/* Tab Navigation */}
+        <div className="flex border-b border-border bg-surface rounded-t-md px-4 pt-2 gap-4">
+          <button
+            onClick={() => setActiveTab("store")}
+            className={`flex items-center gap-2 pb-3 px-1 text-xs font-semibold border-b-2 transition-all ${
+              activeTab === "store"
+                ? "border-text text-text font-bold"
+                : "border-transparent text-text-muted hover:text-text"
+            }`}
+          >
+            <Store className="w-4 h-4" />
+            <span>Profil Toko & Struk</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("employees")}
+            className={`flex items-center gap-2 pb-3 px-1 text-xs font-semibold border-b-2 transition-all ${
+              activeTab === "employees"
+                ? "border-text text-text font-bold"
+                : "border-transparent text-text-muted hover:text-text"
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Kelola Karyawan</span>
+            {employees.length > 0 && (
+              <span className="text-[10px] bg-surface-subtle border border-border px-1.5 py-0.2 rounded-full font-mono text-text-muted font-bold">
+                {employees.length}
               </span>
-            </div>
-
-            <div className="p-6 bg-slate-100 flex items-center justify-center flex-1">
-              <div className="w-full max-w-[280px] bg-white border border-slate-300 rounded shadow-sm p-4 font-mono text-[11px] text-slate-900 space-y-3">
-                {/* Header Struk Dinamis */}
-                <div className="text-center space-y-1 border-b border-dashed border-slate-300 pb-2.5">
-                  {/* Logo Toko di Struk */}
-                  {logoPreview && (
-                    <div className="flex justify-center mb-2">
-                      <div className="w-14 h-14 relative flex items-center justify-center">
-                        <img
-                          src={logoPreview}
-                          alt="Logo"
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  <p className="font-bold text-sm tracking-tight text-slate-950 uppercase leading-snug">
-                    {formData.storeName || "NAMA TOKO"}
-                  </p>
-                  {formData.address && (
-                    <p className="text-[10px] text-slate-600 leading-tight whitespace-pre-line">{formData.address}</p>
-                  )}
-                  {formData.phoneNumber && (
-                    <p className="text-[10px] text-slate-600 font-semibold">Telp/WA: {formData.phoneNumber}</p>
-                  )}
-                  <p className="text-[9px] text-slate-400 mt-1">22/10/2026 18:05 • INV-20261022-0042</p>
-                </div>
-
-                {/* Items Dummy */}
-                <div className="space-y-1 border-b border-dashed border-slate-300 pb-2 text-[10px]">
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-800">Kopi Susu Gula Aren</p>
-                      <p className="text-slate-400">2 &times; Rp 18.000</p>
-                    </div>
-                    <span className="font-bold">Rp 36.000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-800">Roti Bakar Keju</p>
-                      <p className="text-slate-400">1 &times; Rp 20.000</p>
-                    </div>
-                    <span className="font-bold">Rp 20.000</span>
-                  </div>
-                </div>
-
-                {/* Total */}
-                <div className="space-y-0.5 text-[10px] border-b border-dashed border-slate-300 pb-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>Rp 56.000</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-xs pt-1 border-t border-slate-200">
-                    <span>TOTAL</span>
-                    <span>Rp 56.000</span>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="text-center text-[10px] text-slate-600 pt-1 leading-snug space-y-1">
-                  <p className="font-medium">{formData.receiptFooter || "Terima kasih atas kunjungan Anda!"}</p>
-                  <p className="text-[9px] text-slate-400">Powered by KasirKITA</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}
+          </button>
         </div>
+
+        {isLoading ? (
+          <div className="bg-surface rounded-md border border-border p-8 text-center text-xs text-text-muted">
+            Memuat data pengaturan...
+          </div>
+        ) : activeTab === "store" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Kolom Kiri: Form Identitas & Logo */}
+            <div className="lg:col-span-7 space-y-4">
+              <StoreLogoUploader
+                logoPreview={logoPreview}
+                isOwner={isOwner}
+                isUploading={isUploadingLogo}
+                onFileChange={handleLogoFileChange}
+                onRemoveLogo={handleRemoveLogo}
+              />
+
+              <StoreProfileForm
+                formData={formData}
+                onChange={setFormData}
+                onSubmit={handleSubmit}
+                isOwner={isOwner}
+                isSaving={isSaving}
+              />
+            </div>
+
+            {/* Kolom Kanan: Live Preview Struk Thermal */}
+            <StoreReceiptPreview
+              storeSetting={formData}
+              logoPreview={logoPreview}
+              cashierName={currentUser?.name}
+            />
+          </div>
+        ) : (
+          /* Tab 2: Kelola Karyawan */
+          <EmployeeManagementSection initialEmployees={employees} />
+        )}
       </div>
     </AppShell>
   );

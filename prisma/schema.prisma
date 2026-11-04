@@ -26,16 +26,28 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum StockMovementType {
+  IN
+  OUT
+}
+
+enum IdempotencyStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  password     String
-  role         Role          @default(KARYAWAN)
-  isActive     Boolean       @default(true)
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           Role            @default(KARYAWAN)
+  isActive       Boolean         @default(true)
+  transactions   Transaction[]
+  stockMovements StockMovement[] @relation("StockMovements")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@map("users")
 }
@@ -60,12 +72,14 @@ model Product {
   price            Decimal           @db.Decimal(12, 2) // Harga Jual
   costPrice        Decimal           @default(0.00) @db.Decimal(12, 2) // Harga Modal
   stock            Int               @default(0)
+  minStock         Int               @default(5)
   unit             String            @default("pcs")
   imageUrl         String?           @db.Text
   isActive         Boolean           @default(true)
   categoryId       String?
   category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   transactionItems TransactionItem[]
+  stockMovements   StockMovement[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -123,4 +137,39 @@ model StoreSetting {
 
   @@map("store_settings")
 }
+
+model StockMovement {
+  id          String            @id @default(cuid())
+  productId   String
+  product     Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type        StockMovementType
+  quantity    Int
+  stockBefore Int
+  stockAfter  Int
+  notes       String?           @db.Text
+  userId      String?
+  user        User?             @relation("StockMovements", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime          @default(now())
+
+  @@index([productId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
+
+model IdempotencyKey {
+  id           String            @id @default(cuid())
+  key          String            @unique
+  scope        String
+  requestHash  String
+  status       IdempotencyStatus @default(PROCESSING)
+  responseBody String?           @db.Text
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([key, scope])
+  @@map("idempotency_keys")
+}
+
+
 

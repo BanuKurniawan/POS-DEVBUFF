@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Simpan URL ke database (singleton StoreSetting)
     const logoUrl = `/uploads/${fileName}`;
-    await (prisma as any).storeSetting.upsert({
+    await prisma.storeSetting.upsert({
       where: { id: "default" },
       update: { logoUrl },
       create: { id: "default", logoUrl },
@@ -70,10 +70,11 @@ export async function POST(req: NextRequest) {
       logoUrl, 
       message: "Logo toko berhasil disimpan!" 
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Upload logo error:", error);
+    const message = error instanceof Error ? error.message : "Gagal mengupload logo.";
     return NextResponse.json(
-      { success: false, message: error?.message || "Gagal mengupload logo." },
+      { success: false, message },
       { status: 500 }
     );
   }

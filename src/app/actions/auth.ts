@@ -63,11 +63,12 @@ export async function loginUser(email: string, password: string): Promise<{
       user: sessionData,
       redirectTo,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan pada server saat mencoba login.";
     return {
       success: false,
-      message: error?.message || "Terjadi kesalahan pada server saat mencoba login.",
+      message,
     };
   }
 }

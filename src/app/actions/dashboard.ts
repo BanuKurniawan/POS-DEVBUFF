@@ -7,6 +7,7 @@ export interface DashboardStats {
   todayTransactions: number;
   estimatedProfit: number;
   totalProducts: number;
+  weeklySales: { day: string; amount: number }[];
   lowStockProducts: {
     id: string;
     name: string;
@@ -59,22 +60,55 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     }
     const estimatedProfit = Math.max(0, todaySales - totalCost);
 
-    // Hitung total produk & produk stok menipis
+    // Hitung total produk & produk stok menipis (berdasarkan minStock masing-masing produk)
     const totalProducts = await prisma.product.count({ where: { isActive: true } });
-    const lowStockDb = await prisma.product.findMany({
+    const allActiveProducts = await prisma.product.findMany({
       where: {
         isActive: true,
-        stock: { lte: 5 },
       },
-      take: 6,
       orderBy: { stock: "asc" },
     });
+
+    const lowStockDb = allActiveProducts
+      .filter((p) => p.stock <= p.minStock)
+      .slice(0, 6);
+
+    // Ambil 7 hari terakhir untuk grafik omset
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const pastWeekTransactions = await prisma.transaction.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true, finalAmount: true },
+    });
+
+    const daysMap: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString("id-ID", { weekday: "short", day: "numeric" });
+      daysMap[key] = 0;
+    }
+
+    for (const trx of pastWeekTransactions) {
+      const key = new Date(trx.createdAt).toLocaleDateString("id-ID", {
+        weekday: "short",
+        day: "numeric",
+      });
+      if (daysMap[key] !== undefined) {
+        daysMap[key] += Number(trx.finalAmount);
+      }
+    }
+
+    const weeklySales = Object.entries(daysMap).map(([day, amount]) => ({ day, amount }));
 
     return {
       todaySales,
       todayTransactions,
       estimatedProfit,
       totalProducts,
+      weeklySales,
       lowStockProducts: lowStockDb.map((p) => ({
         id: p.id,
         name: p.name,
@@ -99,15 +133,24 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       todayTransactions: 28,
       estimatedProfit: 740000,
       totalProducts: 42,
+      weeklySales: [
+        { day: "Sen, 26", amount: 1200000 },
+        { day: "Sel, 27", amount: 1450000 },
+        { day: "Rab, 28", amount: 1300000 },
+        { day: "Kam, 29", amount: 1680000 },
+        { day: "Jum, 30", amount: 2100000 },
+        { day: "Sab, 31", amount: 2450000 },
+        { day: "Min, 1", amount: 1850000 },
+      ],
       lowStockProducts: [
-        { id: "p1", name: "Mie Goreng Nyemek Pedas", sku: "FOD-003", stock: 3, unit: "porsi", price: 18000 },
-        { id: "p2", name: "Brownies Fudgy Almond", sku: "BAK-002", stock: 2, unit: "pcs", price: 14000 },
-        { id: "p3", name: "Keripik Singkong Balado", sku: "SNK-002", stock: 0, unit: "bks", price: 10000 },
+        { id: "p1", name: "Minyak Goreng SunCo 1L", sku: "MYK-002", stock: 4, unit: "pouch", price: 19000 },
+        { id: "p2", name: "Susu Kental Manis 370g", sku: "TLS-002", stock: 3, unit: "kaleng", price: 12500 },
+        { id: "p3", name: "Daia Deterjen Bubuk 850g", sku: "KBH-002", stock: 0, unit: "bks", price: 18500 },
       ],
       recentTransactions: [
-        { id: "t1", invoiceNumber: "INV-20261022-0028", finalAmount: 58000, paymentMethod: "QRIS", createdAt: new Date(), cashierName: "Ahmad Dani" },
-        { id: "t2", invoiceNumber: "INV-20261022-0027", finalAmount: 42000, paymentMethod: "TUNAI", createdAt: new Date(Date.now() - 15 * 60000), cashierName: "Ahmad Dani" },
-        { id: "t3", invoiceNumber: "INV-20261022-0026", finalAmount: 95000, paymentMethod: "TUNAI", createdAt: new Date(Date.now() - 45 * 60000), cashierName: "Siti Rahma" },
+        { id: "t1", invoiceNumber: "INV-20261101-0028", finalAmount: 104000, paymentMethod: "TUNAI", createdAt: new Date(), cashierName: "Ahmad Kasir" },
+        { id: "t2", invoiceNumber: "INV-20261101-0027", finalAmount: 42000, paymentMethod: "QRIS", createdAt: new Date(Date.now() - 15 * 60000), cashierName: "Ahmad Kasir" },
+        { id: "t3", invoiceNumber: "INV-20261101-0026", finalAmount: 95000, paymentMethod: "TUNAI", createdAt: new Date(Date.now() - 45 * 60000), cashierName: "Budi Gunawan" },
       ],
     };
   }

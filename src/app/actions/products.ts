@@ -11,6 +11,7 @@ export interface ProductDTO {
   price: number;
   costPrice: number;
   stock: number;
+  minStock: number;
   unit: string;
   category: string;
   categoryId: string | null;
@@ -33,7 +34,7 @@ export async function getProducts(): Promise<ProductDTO[]> {
       orderBy: { createdAt: "desc" },
     });
 
-    return products.map((p: any) => ({
+    return products.map((p) => ({
       id: p.id,
       name: p.name,
       sku: p.sku,
@@ -41,6 +42,7 @@ export async function getProducts(): Promise<ProductDTO[]> {
       price: Number(p.price),
       costPrice: Number(p.costPrice),
       stock: p.stock,
+      minStock: p.minStock ?? 5,
       unit: p.unit,
       category: p.category?.name || "Umum",
       categoryId: p.categoryId,
@@ -64,7 +66,7 @@ export async function getCategories(): Promise<CategoryDTO[]> {
       },
     });
 
-    return categories.map((c: any) => ({
+    return categories.map((c) => ({
       id: c.id,
       name: c.name,
       slug: c.slug,
@@ -124,8 +126,9 @@ export async function createCategory(name: string): Promise<{ success: boolean; 
         productCount: 0,
       },
     };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal membuat kategori baru." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal membuat kategori baru.";
+    return { success: false, message };
   }
 }
 
@@ -153,8 +156,9 @@ export async function updateCategory(id: string, name: string): Promise<{ succes
     revalidatePath("/products");
     revalidatePath("/pos");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal memperbarui kategori." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal memperbarui kategori.";
+    return { success: false, message };
   }
 }
 
@@ -174,8 +178,9 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; me
     revalidatePath("/products");
     revalidatePath("/pos");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal menghapus kategori." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal menghapus kategori.";
+    return { success: false, message };
   }
 }
 
@@ -187,6 +192,7 @@ export interface ProductInput {
   price: number;
   costPrice?: number;
   stock?: number;
+  minStock?: number;
   unit?: string;
   categoryId?: string | null;
 }
@@ -217,7 +223,7 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
     }
 
     // Cek barcode unik jika diisi
-    let finalBarcode = input.barcode?.trim() || null;
+    const finalBarcode = input.barcode?.trim() || null;
     if (finalBarcode) {
       const existingBarcode = await prisma.product.findUnique({
         where: { barcode: finalBarcode },
@@ -235,6 +241,7 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
         price: input.price,
         costPrice: input.costPrice || 0,
         stock: Math.max(0, input.stock ?? 0),
+        minStock: Math.max(0, input.minStock ?? 5),
         unit: input.unit?.trim() || "pcs",
         categoryId: input.categoryId || null,
         isActive: true,
@@ -242,8 +249,23 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
       include: { category: true },
     });
 
+    // Jika ada stok awal, catat juga di StockMovement (type: IN)
+    if (created.stock > 0) {
+      await prisma.stockMovement.create({
+        data: {
+          productId: created.id,
+          type: "IN",
+          quantity: created.stock,
+          stockBefore: 0,
+          stockAfter: created.stock,
+          notes: "Stok awal produk baru",
+        },
+      });
+    }
+
     revalidatePath("/products");
     revalidatePath("/pos");
+    revalidatePath("/stock-in");
 
     return {
       success: true,
@@ -255,14 +277,16 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
         price: Number(created.price),
         costPrice: Number(created.costPrice),
         stock: created.stock,
+        minStock: created.minStock,
         unit: created.unit,
         category: created.category?.name || "Umum",
         categoryId: created.categoryId,
         isActive: created.isActive,
       },
     };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal menambahkan produk." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal menambahkan produk.";
+    return { success: false, message };
   }
 }
 
@@ -274,7 +298,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<{ 
       return { success: false, message: "Nama produk wajib diisi." };
     }
 
-    let finalSku = input.sku?.trim() || `PRD-${Date.now().toString().slice(-6)}`;
+    const finalSku = input.sku?.trim() || `PRD-${Date.now().toString().slice(-6)}`;
     // Cek duplikasi SKU pada produk lain
     const existingSku = await prisma.product.findFirst({
       where: { sku: finalSku, NOT: { id } },
@@ -283,7 +307,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<{ 
       return { success: false, message: `SKU "${finalSku}" sudah digunakan produk lain.` };
     }
 
-    let finalBarcode = input.barcode?.trim() || null;
+    const finalBarcode = input.barcode?.trim() || null;
     if (finalBarcode) {
       const existingBarcode = await prisma.product.findFirst({
         where: { barcode: finalBarcode, NOT: { id } },
@@ -302,6 +326,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<{ 
         price: input.price,
         costPrice: input.costPrice || 0,
         stock: Math.max(0, input.stock ?? 0),
+        minStock: input.minStock !== undefined ? Math.max(0, input.minStock) : undefined,
         unit: input.unit?.trim() || "pcs",
         categoryId: input.categoryId || null,
       },
@@ -309,9 +334,11 @@ export async function updateProduct(id: string, input: ProductInput): Promise<{ 
 
     revalidatePath("/products");
     revalidatePath("/pos");
+    revalidatePath("/stock-in");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal memperbarui produk." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal memperbarui produk.";
+    return { success: false, message };
   }
 }
 
@@ -338,7 +365,8 @@ export async function deleteProduct(id: string): Promise<{ success: boolean; mes
     revalidatePath("/products");
     revalidatePath("/pos");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error?.message || "Gagal menghapus produk." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal menghapus produk.";
+    return { success: false, message };
   }
 }

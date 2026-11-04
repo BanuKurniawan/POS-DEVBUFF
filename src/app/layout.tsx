@@ -5,13 +5,13 @@ import "./globals.css";
 const lato = Lato({
   variable: "--font-lato",
   subsets: ["latin"],
-  weight: ["300", "400", "700", "900"],
+  weight: ["400", "700", "900"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "KasirKITA - Point of Sale Modern untuk UMKM",
-  description: "Aplikasi kasir berbasis web yang cepat, responsif, dan mudah digunakan untuk UMKM Indonesia.",
+  title: "KasirKITA - Kasir & Manajemen Stok Sembako",
+  description: "Aplikasi POS kasir dan manajemen stok cepat, responsif, dan mudah digunakan untuk toko sembako.",
   icons: {
     icon: [
       { url: "/KasirKITA.png" },
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${lato.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-100 text-slate-900 font-[family-name:var(--font-lato)]">
+      <body className="min-h-full flex flex-col bg-ground text-text font-sans selection:bg-accent-light selection:text-accent">
         {children}
       </body>
     </html>

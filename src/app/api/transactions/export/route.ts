@@ -101,10 +101,11 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Gagal export CSV:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Gagal membuat file export: " + (error?.message || "Unknown error") },
+      { error: "Gagal membuat file export: " + message },
       { status: 500 }
     );
   }

@@ -10,7 +10,8 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:seed": "prisma db seed",
-    "db:setup": "node scripts/db-setup.mjs"
+    "db:setup": "node scripts/db-setup.mjs",
+    "test:idempotency": "tsx scripts/test-idempotency.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

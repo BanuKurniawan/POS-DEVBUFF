@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export interface TransactionDTO {
   id: string;
@@ -39,7 +40,7 @@ export async function getTransactions(filter?: TransactionFilter): Promise<{
   summary: TransactionSummaryDTO;
 }> {
   try {
-    const whereClause: any = {};
+    const whereClause: Prisma.TransactionWhereInput = {};
 
     const now = new Date();
 
@@ -77,12 +78,12 @@ export async function getTransactions(filter?: TransactionFilter): Promise<{
       orderBy: { createdAt: "desc" },
     });
 
-    const transactions: TransactionDTO[] = list.map((t: any) => {
+    const transactions: TransactionDTO[] = list.map((t) => {
       const totalAmount = Number(t.totalAmount);
       const finalAmount = Number(t.finalAmount);
       
       // Hitung total modal / HPP berdasarkan harga modal produk saat ini
-      const totalCost = t.items.reduce((sum: number, item: any) => {
+      const totalCost = t.items.reduce((sum: number, item) => {
         const costPrice = item.product?.costPrice ? Number(item.product.costPrice) : 0;
         return sum + costPrice * item.quantity;
       }, 0);
@@ -102,7 +103,7 @@ export async function getTransactions(filter?: TransactionFilter): Promise<{
         status: t.status,
         createdAt: t.createdAt,
         cashierName: t.user?.name || "Kasir Umum",
-        itemCount: t.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+        itemCount: t.items.reduce((sum: number, item) => sum + item.quantity, 0),
         totalCost,
         grossProfit,
         notes: t.notes,

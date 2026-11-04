@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export interface StoreSettingDTO {
@@ -14,12 +15,12 @@ export interface StoreSettingDTO {
 
 export async function getStoreSetting(): Promise<StoreSettingDTO> {
   try {
-    let setting = await (prisma as any).storeSetting.findUnique({
+    let setting = await prisma.storeSetting.findUnique({
       where: { id: "default" },
     });
 
     if (!setting) {
-      setting = await (prisma as any).storeSetting.create({
+      setting = await prisma.storeSetting.create({
         data: {
           id: "default",
           storeName: "Toko Berkah UMKM",
@@ -60,7 +61,7 @@ export async function updateStoreSetting(data: {
   receiptFooter: string;
 }): Promise<{ success: boolean; message: string; setting?: StoreSettingDTO }> {
   try {
-    const updateData: Record<string, any> = {
+    const updateData: Prisma.StoreSettingUpdateInput = {
       storeName: data.storeName.trim() || "Toko Saya",
       address: data.address.trim() || null,
       phoneNumber: data.phoneNumber.trim() || null,
@@ -72,12 +73,16 @@ export async function updateStoreSetting(data: {
       updateData.logoUrl = data.logoUrl.trim() || null;
     }
 
-    const updated = await (prisma as any).storeSetting.upsert({
+    const updated = await prisma.storeSetting.upsert({
       where: { id: "default" },
       update: updateData,
       create: {
         id: "default",
-        ...updateData,
+        storeName: updateData.storeName as string,
+        address: (updateData.address as string) || null,
+        phoneNumber: (updateData.phoneNumber as string) || null,
+        logoUrl: (updateData.logoUrl as string) || null,
+        receiptFooter: (updateData.receiptFooter as string) || null,
       },
     });
 
@@ -97,11 +102,12 @@ export async function updateStoreSetting(data: {
         receiptFooter: updated.receiptFooter || "Terima kasih atas kunjungan Anda!",
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to update store settings:", error);
+    const message = error instanceof Error ? error.message : "Gagal menyimpan pengaturan toko.";
     return {
       success: false,
-      message: error?.message || "Gagal menyimpan pengaturan toko.",
+      message,
     };
   }
 }

@@ -104,11 +104,12 @@ export async function createEmployee(data: {
         transactionCount: 0,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Create employee error:", error);
+    const message = error instanceof Error ? error.message : "Gagal menambahkan kasir baru.";
     return {
       success: false,
-      message: error?.message || "Gagal menambahkan kasir baru.",
+      message,
     };
   }
 }
@@ -140,11 +141,12 @@ export async function toggleEmployeeStatus(
       }.`,
       newStatus: updated.isActive,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Toggle employee status error:", error);
+    const message = error instanceof Error ? error.message : "Gagal mengubah status kasir.";
     return {
       success: false,
-      message: error?.message || "Gagal mengubah status kasir.",
+      message,
     };
   }
 }
@@ -189,11 +191,12 @@ export async function deleteEmployee(
       success: true,
       message: `Akun kasir "${user.name}" berhasil dihapus secara permanen.`,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Delete employee error:", error);
+    const message = error instanceof Error ? error.message : "Gagal menghapus kasir.";
     return {
       success: false,
-      message: error?.message || "Gagal menghapus kasir.",
+      message,
     };
   }
 }

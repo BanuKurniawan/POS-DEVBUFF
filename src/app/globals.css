@@ -1,26 +1,207 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Framed-sheet light theme design tokens */
+  --ground: #f4f5f6;
+  --surface: #ffffff;
+  --surface-raised: #fcfcfc;
+  --surface-subtle: #f8f9fa;
+  --surface-sidebar: #fbfcfc;
+  --sidebar-border: #e6e8eb;
+  
+  --border: #e2e4e8;
+  --border-subtle: #eceef0;
+  --border-strong: #d0d3d8;
+  --rule: #f0f2f4;
+  
+  --text: #121316;
+  --text-muted: #5b616e;
+  --text-faint: #848b99;
+  
+  /* Primary button: near-black */
+  --primary: #18191b;
+  --primary-hover: #27282b;
+  --primary-foreground: #ffffff;
+  
+  /* Single accent hue: Emerald */
+  --accent: #15803d;
+  --accent-hover: #166534;
+  --accent-light: #dcfce7;
+  --accent-foreground: #ffffff;
+  
+  /* Status semantic colors */
+  --positive: #15803d;
+  --positive-bg: #ecfdf5;
+  --positive-border: #bbf7d0;
+  --positive-text: #14532d;
+  
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-text: #78350f;
+  
+  --negative: #b91c1c;
+  --negative-bg: #fef2f2;
+  --negative-border: #fecaca;
+  --negative-text: #7f1d1d;
+  
+  --info: #0369a1;
+  --info-bg: #f0f9ff;
+  --info-border: #bae6fd;
+  --info-text: #0c4a6e;
+
+  /* Restrained radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+
+  /* App Dimensions */
+  --sidebar-width: 232px;
+  --header-height: 52px;
+}
+
+:root[data-theme="dark"],
+.dark {
+  --ground: #0d0e11;
+  --surface: #14161a;
+  --surface-raised: #1a1d22;
+  --surface-subtle: #181a1f;
+  --surface-sidebar: #111317;
+  --sidebar-border: #22252b;
+  
+  --border: #24272e;
+  --border-subtle: #1d2026;
+  --border-strong: #323640;
+  --rule: #1b1d23;
+  
+  --text: #f3f4f6;
+  --text-muted: #9aa0ad;
+  --text-faint: #676d7b;
+  
+  --primary: #f3f4f6;
+  --primary-hover: #e5e7eb;
+  --primary-foreground: #111317;
+  
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-light: #052e16;
+  --accent-foreground: #ffffff;
+  
+  --positive: #22c55e;
+  --positive-bg: #052e16;
+  --positive-border: #14532d;
+  --positive-text: #86efac;
+  
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --warning-border: #78350f;
+  --warning-text: #fde68a;
+  
+  --negative: #ef4444;
+  --negative-bg: #450a0a;
+  --negative-border: #7f1d1d;
+  --negative-text: #fca5a5;
+  
+  --info: #38bdf8;
+  --info-bg: #082f49;
+  --info-border: #0c4a6e;
+  --info-text: #bae6fd;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-sidebar: var(--surface-sidebar);
+  
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-rule: var(--rule);
+  
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-accent-foreground: var(--accent-foreground);
+  
+  --color-positive: var(--positive);
+  --color-positive-bg: var(--positive-bg);
+  --color-positive-border: var(--positive-border);
+  --color-positive-text: var(--positive-text);
+  
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-warning-text: var(--warning-text);
+  
+  --color-negative: var(--negative);
+  --color-negative-bg: var(--negative-bg);
+  --color-negative-border: var(--negative-border);
+  --color-negative-text: var(--negative-text);
+  
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
+  --color-info-text: var(--info-text);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base resets & typography */
+html, body {
+  background-color: var(--ground);
+  color: var(--text);
+  min-height: 100%;
+}
+
+/* Numbers alignment utility - crucial for currency, stock, SKU */
+.num,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Focus styles for keyboard accessibility */
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Print friendly receipt utility */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
 }
