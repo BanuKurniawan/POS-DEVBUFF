@@ -1,97 +1,104 @@
 # KasirKITA — Sistem Point of Sales & Manajemen Stok UMKM
 
+Aplikasi kasir (Point of Sale) dan manajemen stok barang untuk toko sembako atau warung kelontong UMKM. Dibuat menggunakan **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, **MySQL 8.0**, dan **Prisma ORM**.
+
+Aplikasi ini sudah dilengkapi sistem proteksi transaksi database *(idempotency key & concurrency safety)* agar tidak terjadi transaksi dobel saat tombol diklik berkali-kali atau koneksi sedang tidak stabil.
+
+---
+
+## Preview Aplikasi
+
 <p align="center">
-  <strong>Solusi lengkap aplikasi Kasir Modern (POS) dan Manajemen Stok Barang terintegrasi untuk Toko Sembako, Retail, dan Warung UMKM.</strong>
+  <img src="public/contoh1.jpg" alt="Preview Halaman Kasir POS" width="100%" />
 </p>
 
 <p align="center">
-  Dibangun dengan <strong>Next.js 16 (App Router)</strong>, <strong>React 19</strong>, <strong>Tailwind CSS v4</strong>, <strong>MySQL 8.0</strong>, dan <strong>Prisma ORM</strong>. Dilengkapi sistem proteksi transaksi database-backed <em>(Idempotency & Concurrency Safety)</em>.
+  <img src="public/contoh2.jpg" alt="Preview Konfirmasi Pembayaran dan Stok" width="100%" />
 </p>
 
 ---
 
-## 🌟 Fitur Unggulan
+## Fitur Utama
 
-### 1. Sistem Kasir / Point of Sales (`/pos`)
-- **Desain Responsif Desktop & Mobile**: Nyaman digunakan di PC desktop, tablet, maupun smartphone kasir dengan drawer keranjang belanja cerdas.
-- **Pencarian Cepat**: Cari barang instan via nama, SKU, atau pemindaian Barcode.
-- **Multi Metode Pembayaran**:
-  - Tunai (dengan hitung cepat kembalian & nominal pas)
-  - QRIS (dengan pratinjau dummy QR dinamis)
-  - Debit Card
-  - Transfer Bank (menampilkan nomor rekening tujuan)
-- **Konfirmasi Pembayaran Sebelum Keluar Struk**: Memastikan uang tunai, transfer, atau QRIS telah masuk sebelum pesanan difinalisasi dan struk dicetak.
-- **Tahan & Panggil Transaksi (*Hold & Recall Order*)**: Simpan antrean belanjaan pelanggan saat ini untuk melayani pelanggan berikutnya tanpa kehilangan keranjang.
-- **Cetak Struk Belanja**: Format ramah printer thermal (58mm/80mm) yang rapi lengkap dengan logo toko dan rincian transaksi.
-- **Shortcut Keyboard Cepat**:
-  - `F2` atau `/` : Fokus langsung ke kolom pencarian barang
-  - `F9` : Buka proses pembayaran
-  - `Spasi` : Set uang tunai sesuai total tagihan (*uang pas*)
-  - `Esc` : Batalkan / tutup modal
+### 1. Halaman Kasir / POS (`/pos`)
+- **Tampilan Desktop & Mobile**: Nyaman dipakai di komputer kasir, tablet, maupun HP dengan drawer keranjang yang responsif.
+- **Pencarian Cepat**: Cari barang lewat nama, SKU, atau scan barcode.
+- **Metode Pembayaran Lengkap**:
+  - Tunai (ada kalkulator kembalian dan opsi uang pas).
+  - QRIS (menampilkan dummy QR code dinamis).
+  - Kartu Debit.
+  - Transfer Bank (menampilkan nomor rekening toko).
+- **Konfirmasi Pembayaran Sebelum Struk Keluar**: Kasir bisa memastikan pembayaran uang/QRIS/transfer sudah masuk dulu sebelum struk dicetak atau bisa mengganti metode pembayaran jika pembeli berubah pikiran.
+- **Tahan & Panggil Transaksi (Hold & Recall)**: Simpan sementara belanjaan pelanggan yang sedang antre untuk melayani pelanggan berikutnya, lalu panggil kembali kapan saja.
+- **Cetak Struk**: Format struk siap cetak untuk printer thermal (58mm/80mm), lengkap dengan nama toko, alamat, dan rincian belanja.
+- **Shortcut Keyboard**:
+  - `F2` atau `/` : Langsung fokus ke pencarian produk.
+  - `F9` : Buka modal pembayaran.
+  - `Spasi` : Set uang tunai sesuai total belanja (uang pas).
+  - `Esc` : Tutup modal / batal.
 
-### 2. Manajemen Stok Barang Masuk & Keluar (`/stock-in` & `/products`)
-- **Pencatatan Stok Masuk (*Stock In*)**: Form penerimaan barang dari supplier dengan pilihan produk cepat dan tombol kuantitas kilat (+10, +25, +50, +100).
-- **Riwayat Mutasi Stok (*Stock Movements*)**:
-  - Mencatat setiap pergerakan barang (Masuk / *IN* & Keluar / *OUT*).
-  - Dilengkapi detail stok sebelum (*stockBefore*), stok sesudah (*stockAfter*), tanggal & jam, catatan pengiriman, dan nama petugas/kasir.
-  - Filter interaktif (Semua, Barang Masuk, Barang Keluar) dan pencarian nama produk / SKU.
-  - **Paginasi Halaman Riwayat** (maksimal 5 entri per halaman) agar tampilan tetap ringkas dan tidak memanjang ke bawah.
-- **Peringatan Stok Menipis (*Low Stock Warning*)**: Notifikasi otomatis saat stok berada di bawah batas minimum yang ditentukan.
+### 2. Manajemen Stok Barang (`/stock-in` & `/products`)
+- **Pencatatan Stok Masuk**: Form penerimaan barang dari supplier dengan pilihan produk cepat dan tombol tambah instan (+10, +25, +50, +100).
+- **Riwayat Mutasi Stok**:
+  - Mencatat keluar-masuk barang secara detail (stok sebelum, stok sesudah, tanggal, catatan, dan nama kasir/petugas).
+  - Ada filter tipe mutasi (Semua, Masuk, Keluar) serta pencarian nama barang atau SKU.
+  - **Paginasi Riwayat**: Dibatasi maksimal 5 data per halaman agar tampilan rapi dan tidak memanjang ke bawah.
+- **Peringatan Stok Menipis**: Indikator otomatis di dashboard ketika sisa stok sudah menyentuh batas minimum.
 
-### 3. Keamanan Transaksi & Anti-Duplikasi (*Idempotency & Concurrency Safety*)
-- **Perlindungan Idempotensi Berbasis Database**: Mencegah transaksi terproses dobel akibat *double-click* kasir, jaringan lemot (*network retry*), atau *refresh* browser.
-- **InnoDB Row Lock Mutex**: Menjamin dua transaksi bersamaan tidak menyebabkan pemotongan stok ganda (*double-deduction*) atau over-selling saat stok menipis.
-- **Payload Integrity Matching**: Validasi hash SHA-256 untuk mendeteksi manipulasi parameter request.
+### 3. Keamanan Transaksi & Anti-Duplikasi
+- **Idempotency Key di Database**: Mencegah transaksi atau penambahan stok terproses dua kali akibat double click atau jaringan terputus.
+- **Row-Level Mutex (InnoDB)**: Menjamin stok tidak berkurang ganda ketika dua kasir memproses pesanan secara bersamaan saat stok menipis.
+- **Payload Hash Matching**: Memverifikasi kesesuaian data menggunakan hash SHA-256 agar request yang sama tidak bisa disalahgunakan untuk transaksi berbeda.
 
-### 4. Dashboard Analisis & Laporan (`/dashboard` & `/transactions`)
-- Ringkasan omzet harian/bulanan, laba kotor toko, total transaksi penjualan, dan barang terlaris.
-- Grafik performa pendapatan harian.
-- Riwayat transaksi penjualan lengkap dengan filter tanggal dan ekspor data ke format file Excel / CSV.
+### 4. Dashboard & Laporan Penjualan (`/dashboard` & `/transactions`)
+- Ringkasan omzet harian, laba kotor, total transaksi, dan produk terlaris.
+- Grafik tren penjualan harian.
+- Riwayat transaksi lengkap dengan filter rentang tanggal dan tombol ekspor data ke Excel / CSV.
 
-### 5. Manajemen Karyawan & Pengaturan Toko (`/settings`)
-- **Hak Akses (*Role-Based Access*)**:
-  - **Pemilik Toko (OWNER)**: Akses penuh ke seluruh menu, laporan laba rugi, manajemen karyawan, dan pengaturan toko.
-  - **Kasir (KARYAWAN)**: Dikhususkan untuk transaksi penjualan di POS dan penerimaan stok barang.
-- **Pengaturan Profil Toko**: Kustomisasi nama toko, alamat, nomor kontak, footer struk, serta upload logo toko.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
-- **UI & Runtime**: [React 19](https://react.dev/), TypeScript
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Database**: [MySQL 8.0](https://www.mysql.com/) (dijalankan via Docker)
-- **ORM**: [Prisma ORM](https://www.prisma.io/)
-- **Icons**: [Lucide React](https://lucide.dev/)
+### 5. Multi-User & Pengaturan Toko (`/settings`)
+- **Pembagian Role**:
+  - **Owner**: Akses penuh ke seluruh menu, laporan laba rugi, data karyawan, dan pengaturan toko.
+  - **Karyawan / Kasir**: Fokus ke operasional transaksi POS dan stok masuk.
+- **Profil Toko**: Kustomisasi nama toko, alamat, nomor HP, catatan footer struk, serta upload logo toko.
 
 ---
 
-## 📋 Persyaratan Sistem
+## Tech Stack
 
-Sebelum memulai instalasi, pastikan software berikut telah terpasang di komputer Anda:
-
-1. **[Node.js](https://nodejs.org/)** versi 20.x ke atas.
-2. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** (pastikan daemon Docker sudah berjalan).
-3. **[Git](https://git-scm.com/)**.
+- **Framework**: Next.js 16 (App Router)
+- **UI & Bahasa**: React 19, TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database**: MySQL 8.0 (Docker)
+- **ORM**: Prisma ORM
+- **Icons**: Lucide React
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan
+## Kebutuhan Sistem
 
-### 1. Clone Repositori
+Pastikan hal-hal berikut sudah terpasang di komputer:
+
+1. Node.js versi 20 ke atas.
+2. Docker Desktop (pastikan aplikasinya sudah dibuka dan aktif).
+3. Git.
+
+---
+
+## Cara Instalasi & Menjalankan
+
+### 1. Clone repositori
 ```bash
 git clone https://github.com/patihrz/sistem-point-of-sales-kasir-sederhana-umkm.git
 cd sistem-point-of-sales-kasir-sederhana-umkm
 ```
 
-### 2. Instal Dependensi
+### 2. Install dependensi
 ```bash
 npm install
 ```
 
-### 3. Konfigurasi Environment Variable
-Salin berkas konfigurasi contoh `.env.example` menjadi `.env`:
+### 3. Siapkan file konfigurasi environment
+Salin `.env.example` menjadi `.env`:
 
 **Windows (PowerShell):**
 ```powershell
@@ -103,73 +110,70 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Konfigurasi standar `.env`:
+Isi default `.env`:
 ```env
 DATABASE_URL="mysql://root:rootpassword@localhost:3306/kasir_simpel"
-NEXTAUTH_SECRET="kunci_rahasia_anda"
+NEXTAUTH_SECRET="kunci_rahasia_bebas_diisi_apa_saja"
 NEXTAUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="KasirKITA"
 NODE_ENV="development"
 ```
 
-### 4. Setup Database Otomatis (Docker + Migrasi + Data Awal)
-Jalankan satu perintah berikut:
+### 4. Setup database (Docker + Migrasi + Data Awal)
+Jalankan satu perintah ini:
 ```bash
 npm run db:setup
 ```
-Perintah ini akan secara otomatis:
-- Menjalankan container Docker (MySQL 8.0 di port 3306 & database browser Adminer di port 8080).
-- Menerapkan seluruh migrasi skema tabel Prisma.
-- Mengisi data awal (*seeding* akun demo, kategori, dan produk sembako).
 
-### 5. Jalankan Aplikasi
+Perintah di atas akan otomatis menyalakan container MySQL & Adminer lewat Docker, membuat seluruh tabel migrasi, dan mengisi data awal (produk sembako, kategori, serta akun demo).
+
+### 5. Jalankan aplikasi
 ```bash
 npm run dev
 ```
 
-Buka browser Anda dan akses:
-👉 **[http://localhost:3000](http://localhost:3000)**
+Buka browser dan buka **http://localhost:3000**.
 
 ---
 
-## 👤 Akun Demo untuk Pengujian
+## Akun Demo untuk Login
 
-| Peran (*Role*) | Email | Password | Akses Fitur |
+| Peran | Email | Password | Hak Akses |
 |---|---|---|---|
-| **Pemilik Toko** | `owner@kasir.com` | `owner123` | Semua fitur: Dashboard, Produk, Stok Masuk, Riwayat, Laporan, Pengaturan |
-| **Kasir** | `kasir@kasir.com` | `kasir123` | Halaman POS Kasir, Pencatatan Stok Masuk, Riwayat Transaksi |
+| **Owner** | `owner@kasir.com` | `owner123` | Akses semua menu (Dashboard, Laporan, Karyawan, Pengaturan) |
+| **Kasir** | `kasir@kasir.com` | `kasir123` | Transaksi POS, Stok Masuk, dan Riwayat Penjualan |
 
-*(Tersedia tombol login cepat 1-klik di halaman login)*
+*(Di halaman login juga disediakan tombol klik cepat untuk langsung masuk tanpa perlu ketik manual).*
 
 ---
 
-## ⌨️ Daftar Perintah (*NPM Scripts*)
+## Perintah yang Tersedia (NPM Scripts)
 
-| Perintah | Deskripsi |
+| Perintah | Keterangan |
 |---|---|
-| `npm run dev` | Menjalankan server aplikasi Next.js dalam mode development |
-| `npm run build` | Menjalankan kompilasi & build optimasi produksi |
-| `npm run start` | Menjalankan build produksi di server lokal |
-| `npm run db:setup` | Inisialisasi otomatis Docker + migrasi database + seeding data |
-| `npm run db:up` | Menyalakan container database Docker (MySQL & Adminer) |
-| `npm run db:down` | Mematikan container database Docker |
-| `npm run db:seed` | Mengisi ulang data demo produk, kategori, dan akun |
-| `npm run test:idempotency` | Menjalankan test suite otomatis konkruensi & proteksi transaksi |
+| `npm run dev` | Menjalankan server lokal (mode development) |
+| `npm run build` | Membuat build produksi yang sudah dioptimasi |
+| `npm run start` | Menjalankan aplikasi dari hasil build produksi |
+| `npm run db:setup` | Menyiapkan Docker, migrasi database, dan data demo |
+| `npm run db:up` | Menyalakan container Docker (MySQL & Adminer) |
+| `npm run db:down` | Mematikan container Docker |
+| `npm run db:seed` | Mengisi ulang data contoh produk dan akun demo |
+| `npm run test:idempotency` | Menjalankan pengujian otomatis konkurensi & proteksi transaksi |
 
 ---
 
-## 🗄️ Akses Database GUI (Adminer)
+## Melihat Database Langsung (Adminer)
 
-Untuk melihat tabel database secara visual di web browser:
-- **URL**: [http://localhost:8080](http://localhost:8080)
-- **Sistem**: `MySQL`
-- **Server**: `mysql` *(atau `localhost` jika mengakses dari luar docker network)*
+Jika ingin melihat atau mengelola isi tabel database lewat antarmuka web:
+- **URL**: http://localhost:8080
+- **Sistem**: MySQL
+- **Server**: `mysql` *(gunakan `localhost` jika mengakses dari luar jaringan Docker)*
 - **Username**: `root`
 - **Password**: `rootpassword`
 - **Database**: `kasir_simpel`
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
-Proyek ini dirilis secara open-source di bawah lisensi [MIT License](LICENSE). Bebas digunakan, dipelajari, dan dikembangkan untuk kebutuhan UMKM Indonesia.
+Proyek ini menggunakan lisensi [MIT](LICENSE). Bebas dipakai, dimodifikasi, dan dikembangkan untuk keperluan usaha atau bahan belajar.
