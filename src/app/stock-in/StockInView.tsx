@@ -15,6 +15,7 @@ import {
   StockInForm,
   StockInHistoryTable,
 } from "@/components/stock-in";
+import { generateUUID } from "@/utils/uuid";
 
 interface StockInViewProps {
   initialProducts: ProductStockSelectDTO[];
@@ -36,7 +37,7 @@ export default function StockInView({
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
 
   useEffect(() => {
-    setIdempotencyKey(crypto.randomUUID());
+    setIdempotencyKey(generateUUID());
   }, []);
 
   // Filter & Search
@@ -88,7 +89,7 @@ export default function StockInView({
       return;
     }
 
-    const currentKey = idempotencyKey || crypto.randomUUID();
+    const currentKey = idempotencyKey || generateUUID();
 
     startFormTransition(async () => {
       const res = await addStock({
@@ -104,7 +105,7 @@ export default function StockInView({
         setQuantity("");
         setNotes("");
         setCurrentPage(1);
-        setIdempotencyKey(crypto.randomUUID());
+        setIdempotencyKey(generateUUID());
 
         const [updatedProducts, updatedMovements] = await Promise.all([
           getProductsForStockSelect(),

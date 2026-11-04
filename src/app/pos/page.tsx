@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ProductDTO, HeldTransaction, StoreSettingDTO, TransactionSummaryDTO } from "@/types";
 import { useCart, useRealtimeClock, useSound } from "@/hooks";
 import { formatRupiah } from "@/utils/format";
+import { generateUUID } from "@/utils/uuid";
 import {
   PosCartPanel,
   PosPaymentConfirmModal,
@@ -223,7 +224,7 @@ export default function PosPage() {
     }
 
     setErrorMessage("");
-    setCheckoutIdempotencyKey(crypto.randomUUID());
+    setCheckoutIdempotencyKey(generateUUID());
     setIsPaymentConfirmModalOpen(true);
   };
 
@@ -234,7 +235,7 @@ export default function PosPage() {
     setIsSubmitting(true);
     setErrorMessage("");
 
-    const currentKey = checkoutIdempotencyKey || crypto.randomUUID();
+    const currentKey = checkoutIdempotencyKey || generateUUID();
     if (!checkoutIdempotencyKey) {
       setCheckoutIdempotencyKey(currentKey);
     }
