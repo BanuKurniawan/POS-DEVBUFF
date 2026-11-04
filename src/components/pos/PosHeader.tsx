@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SessionUser } from "@/lib/auth";
+import { PosCategorySlider } from "./PosCategorySlider";
 
 interface PosHeaderProps {
   storeName: string;
@@ -168,33 +169,13 @@ export const PosHeader: React.FC<PosHeaderProps> = ({
         </div>
       </div>
 
-      {/* Category Pills Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-        {categories.map((cat) => {
-          const isSelected = selectedCategory === cat;
-          const count = categoryCountMap[cat] || 0;
-          return (
-            <button
-              key={cat}
-              onClick={() => onSelectCategory(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                isSelected
-                  ? "bg-text text-ground font-bold shadow-2xs"
-                  : "bg-surface-subtle border border-border text-text hover:bg-surface hover:border-border-strong"
-              }`}
-            >
-              <span>{cat}</span>
-              <span
-                className={`text-[10px] font-mono px-1 rounded ${
-                  isSelected ? "bg-ground/20 text-ground" : "bg-surface border border-border text-text-muted"
-                }`}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Category Slider Bar */}
+      <PosCategorySlider
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={onSelectCategory}
+        categoryCountMap={categoryCountMap}
+      />
     </div>
   );
 };

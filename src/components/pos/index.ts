@@ -8,4 +8,5 @@ export * from "./PosReceiptModal";
 export * from "./PosHoldModal";
 export * from "./PosRecallModal";
 export * from "./PosShortcutsModal";
+export * from "./PosCategorySlider";
 

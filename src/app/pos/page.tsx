@@ -41,6 +41,7 @@ import {
   PosHoldModal,
   PosRecallModal,
   PosShortcutsModal,
+  PosCategorySlider,
 } from "@/components/pos";
 
 export default function PosPage() {
@@ -761,34 +762,13 @@ export default function PosPage() {
               </button>
             </div>
 
-            {/* Category Pills Bar */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-              {categories.map((cat) => {
-                const isSelected = selectedCategory === cat;
-                const count = categoryCountMap[cat] ?? 0;
-
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${isSelected
-                        ? "bg-primary text-primary-foreground border border-primary shadow-xs"
-                        : "bg-surface text-text hover:bg-surface-subtle border border-border"
-                      }`}
-                  >
-                    <span>{cat}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-medium ${isSelected
-                          ? "bg-primary-hover text-primary-foreground"
-                          : "bg-surface-subtle text-text-muted"
-                        }`}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* Category Slider Bar */}
+            <PosCategorySlider
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+              categoryCountMap={categoryCountMap}
+            />
           </div>
 
           {/* Product Grid / List */}
