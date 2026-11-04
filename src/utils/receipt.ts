@@ -65,9 +65,19 @@ export function formatWhatsAppReceiptText(data: ReceiptData): string {
   return `${storeHeader}\n${invoiceInfo}\n${itemsList}\n${summary}`;
 }
 
-export function getWhatsAppShareUrl(data: ReceiptData): string {
+export function getWhatsAppShareUrl(data: ReceiptData, customerPhone?: string): string {
   const fullText = formatWhatsAppReceiptText(data);
-  return `https://wa.me/?text=${encodeURIComponent(fullText)}`;
+  let cleanPhone = (customerPhone || "").replace(/[^0-9]/g, "");
+  if (cleanPhone.startsWith("0")) {
+    cleanPhone = "62" + cleanPhone.slice(1);
+  } else if (cleanPhone.startsWith("8")) {
+    cleanPhone = "62" + cleanPhone;
+  }
+
+  if (cleanPhone.length >= 8) {
+    return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(fullText)}`;
+  }
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
 }
 
 export function getPaymentMethodLabel(method: string): string {

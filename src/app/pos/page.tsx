@@ -1033,6 +1033,8 @@ export default function PosPage() {
         isOpen={isReceiptModalOpen}
         onClose={() => {
           setIsReceiptModalOpen(false);
+          setCompletedTransaction(null);
+          clearCart();
           searchInputRef.current?.focus();
         }}
         completedTransaction={completedTransaction}
