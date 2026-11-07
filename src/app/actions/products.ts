@@ -15,6 +15,7 @@ export interface ProductDTO {
   unit: string;
   category: string;
   categoryId: string | null;
+  imageUrl?: string | null;
   isActive: boolean;
 }
 
@@ -46,6 +47,7 @@ export async function getProducts(): Promise<ProductDTO[]> {
       unit: p.unit,
       category: p.category?.name || "Umum",
       categoryId: p.categoryId,
+      imageUrl: p.imageUrl || null,
       isActive: p.isActive,
     }));
   } catch (error) {
@@ -195,6 +197,7 @@ export interface ProductInput {
   minStock?: number;
   unit?: string;
   categoryId?: string | null;
+  imageUrl?: string | null;
 }
 
 export async function createProduct(input: ProductInput): Promise<{ success: boolean; message?: string; product?: ProductDTO }> {
@@ -244,6 +247,7 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
         minStock: Math.max(0, input.minStock ?? 5),
         unit: input.unit?.trim() || "pcs",
         categoryId: input.categoryId || null,
+        imageUrl: input.imageUrl?.trim() || null,
         isActive: true,
       },
       include: { category: true },
@@ -281,6 +285,7 @@ export async function createProduct(input: ProductInput): Promise<{ success: boo
         unit: created.unit,
         category: created.category?.name || "Umum",
         categoryId: created.categoryId,
+        imageUrl: created.imageUrl || null,
         isActive: created.isActive,
       },
     };
@@ -329,6 +334,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<{ 
         minStock: input.minStock !== undefined ? Math.max(0, input.minStock) : undefined,
         unit: input.unit?.trim() || "pcs",
         categoryId: input.categoryId || null,
+        imageUrl: input.imageUrl !== undefined ? (input.imageUrl ? input.imageUrl.trim() : null) : undefined,
       },
     });
 

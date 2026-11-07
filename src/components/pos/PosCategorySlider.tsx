@@ -192,3 +192,4 @@ export const PosCategorySlider: React.FC<PosCategorySliderProps> = ({
     </div>
   );
 };
+

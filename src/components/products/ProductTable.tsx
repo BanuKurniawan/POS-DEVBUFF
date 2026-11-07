@@ -4,6 +4,7 @@ import { ProductDTO } from "@/types";
 import { formatRupiah } from "@/utils/format";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ProductImage } from "./ProductImage";
 import {
   Table,
   TableHeader,
@@ -53,43 +54,58 @@ export const ProductTable: React.FC<ProductTableProps> = ({
               key={p.id}
               className="bg-surface border border-border rounded-md p-3.5 space-y-2.5 shadow-2xs"
             >
-              {/* Card Top: Title & Badges */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-text text-sm leading-tight truncate">
-                    {p.name}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-text-muted font-mono">
-                    <span>{p.sku}</span>
-                    {p.barcode && (
-                      <>
-                        <span>&bull;</span>
-                        <span className="flex items-center gap-0.5">
-                          <Barcode className="w-3 h-3 text-text-faint" />
-                          {p.barcode}
-                        </span>
-                      </>
-                    )}
-                  </div>
+              {/* Card Top: Thumbnail + Title & Badges */}
+              <div className="flex items-start gap-3">
+                <div className="w-14 h-14 rounded-md border border-border bg-surface-subtle overflow-hidden shrink-0 flex items-center justify-center p-1">
+                  <ProductImage
+                    src={p.imageUrl}
+                    alt={p.name}
+                    className="w-full h-full object-contain"
+                    iconClassName="w-6 h-6 text-text-faint"
+                    showFallbackText={false}
+                  />
                 </div>
 
-                <div className="shrink-0 flex flex-col items-end gap-1">
-                  {isOutOfStock ? (
-                    <Badge variant="danger" size="sm" showDefaultIcon>
-                      Habis
-                    </Badge>
-                  ) : isLowStock ? (
-                    <Badge variant="warning" size="sm" showDefaultIcon>
-                      Menipis
-                    </Badge>
-                  ) : (
-                    <Badge variant="success" size="sm" showDefaultIcon>
-                      Tersedia
-                    </Badge>
-                  )}
-                  <span className="text-[10px] text-text-muted bg-surface-subtle px-1.5 py-0.2 rounded border border-border">
-                    {p.category}
-                  </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-1.5">
+                    <h3 className="font-semibold text-text text-sm leading-tight line-clamp-2">
+                      {p.name}
+                    </h3>
+                    <span className="text-[10px] text-text-muted bg-surface-subtle px-1.5 py-0.2 rounded border border-border shrink-0">
+                      {p.category}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 mt-1.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-text-muted font-mono truncate">
+                      <span>{p.sku}</span>
+                      {p.barcode && (
+                        <>
+                          <span>&bull;</span>
+                          <span className="flex items-center gap-0.5 truncate">
+                            <Barcode className="w-3 h-3 text-text-faint shrink-0" />
+                            <span className="truncate">{p.barcode}</span>
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="shrink-0">
+                      {isOutOfStock ? (
+                        <Badge variant="danger" size="sm" showDefaultIcon>
+                          Habis
+                        </Badge>
+                      ) : isLowStock ? (
+                        <Badge variant="warning" size="sm" showDefaultIcon>
+                          Menipis
+                        </Badge>
+                      ) : (
+                        <Badge variant="success" size="sm" showDefaultIcon>
+                          Tersedia
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -178,13 +194,26 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                     {idx + 1}
                   </TableCell>
                   <TableCell>
-                    <div className="font-semibold text-text leading-tight">{p.name}</div>
-                    {p.barcode && (
-                      <div className="text-[11px] text-text-muted flex items-center gap-1 mt-0.5 font-mono">
-                        <Barcode className="w-3 h-3 text-text-faint" />
-                        <span>{p.barcode}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded border border-border bg-surface-subtle overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                        <ProductImage
+                          src={p.imageUrl}
+                          alt={p.name}
+                          className="w-full h-full object-contain"
+                          iconClassName="w-5 h-5 text-text-faint"
+                          showFallbackText={false}
+                        />
                       </div>
-                    )}
+                      <div className="min-w-0">
+                        <div className="font-semibold text-text leading-tight truncate max-w-[260px] lg:max-w-xs">{p.name}</div>
+                        {p.barcode && (
+                          <div className="text-[11px] text-text-muted flex items-center gap-1 mt-0.5 font-mono">
+                            <Barcode className="w-3 h-3 text-text-faint" />
+                            <span>{p.barcode}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span className="text-xs text-text-muted bg-surface-subtle px-1.5 py-0.5 rounded-sm border border-border">

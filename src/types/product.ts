@@ -10,6 +10,7 @@ export interface ProductDTO {
   unit: string;
   category: string;
   categoryId: string | null;
+  imageUrl?: string | null;
   isActive: boolean;
 }
 
@@ -30,5 +31,6 @@ export interface ProductFormData {
   minStock: number;
   unit: string;
   categoryId: string;
+  imageUrl?: string | null;
 }
 

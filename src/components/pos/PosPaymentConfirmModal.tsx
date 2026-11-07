@@ -76,10 +76,10 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
             {paymentMethod === "QRIS"
               ? "Dana QRIS Masuk — Terbitkan Struk"
               : paymentMethod === "TRANSFER"
-              ? "Dana Transfer Masuk — Terbitkan Struk"
-              : paymentMethod === "DEBIT"
-              ? "EDC Berhasil — Terbitkan Struk"
-              : "Uang Pas / Diterima — Terbitkan Struk"}
+                ? "Dana Transfer Masuk — Terbitkan Struk"
+                : paymentMethod === "DEBIT"
+                  ? "EDC Berhasil — Terbitkan Struk"
+                  : "Uang Pas / Diterima — Terbitkan Struk"}
           </Button>
         </div>
       }
@@ -130,11 +130,10 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
                     onCashGivenChange(finalTotal);
                   }
                 }}
-                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
-                  paymentMethod === id
-                    ? "bg-surface border border-border text-text font-bold shadow-2xs"
-                    : "text-text-muted hover:text-text hover:bg-surface/50"
-                }`}
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${paymentMethod === id
+                  ? "bg-surface border border-border text-text font-bold shadow-2xs"
+                  : "text-text-muted hover:text-text hover:bg-surface/50"
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5 text-current shrink-0" />
                 <span>{label}</span>
@@ -386,9 +385,8 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
               <div className="p-3 bg-surface-subtle rounded-md border border-border">
                 <span className="text-[11px] text-text-muted block">Uang Kembalian</span>
                 <span
-                  className={`text-base font-bold font-mono num mt-0.5 block ${
-                    changeAmount > 0 ? "text-accent" : "text-text"
-                  }`}
+                  className={`text-base font-bold font-mono num mt-0.5 block ${changeAmount > 0 ? "text-accent" : "text-text"
+                    }`}
                 >
                   {cashGiven < finalTotal ? "Uang Kurang" : formatRupiah(changeAmount)}
                 </span>
@@ -437,4 +435,3 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
     </Dialog>
   );
 };
-

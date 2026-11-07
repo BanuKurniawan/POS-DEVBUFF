@@ -4,4 +4,5 @@ export * from "./ProductTable";
 export * from "./ProductFormModal";
 export * from "./ProductDeleteModal";
 export * from "./CategoryManageModal";
+export * from "./ProductImage";
 

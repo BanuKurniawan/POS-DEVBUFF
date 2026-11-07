@@ -58,6 +58,7 @@ export default function ProductsView({
   const [formMinStock, setFormMinStock] = useState<number>(5);
   const [formUnit, setFormUnit] = useState<string>("pcs");
   const [formCategoryId, setFormCategoryId] = useState<string>("");
+  const [formImageUrl, setFormImageUrl] = useState<string>("");
 
   // Modal State Hapus
   const [deletingProduct, setDeletingProduct] = useState<ProductDTO | null>(null);
@@ -123,6 +124,7 @@ export default function ProductsView({
     setFormMinStock(5);
     setFormUnit("pcs");
     setFormCategoryId(categories[0]?.id || "");
+    setFormImageUrl("");
     setIsProductModalOpen(true);
   };
 
@@ -138,6 +140,7 @@ export default function ProductsView({
     setFormMinStock(p.minStock ?? 5);
     setFormUnit(p.unit);
     setFormCategoryId(p.categoryId || "");
+    setFormImageUrl(p.imageUrl || "");
     setIsProductModalOpen(true);
   };
 
@@ -164,6 +167,7 @@ export default function ProductsView({
       minStock: formMinStock,
       unit: formUnit.trim() || "pcs",
       categoryId: formCategoryId || null,
+      imageUrl: formImageUrl.trim() || null,
     };
 
     startTransition(async () => {
@@ -353,6 +357,8 @@ export default function ProductsView({
         onFormStockChange={setFormStock}
         formMinStock={formMinStock}
         onFormMinStockChange={setFormMinStock}
+        formImageUrl={formImageUrl}
+        onFormImageUrlChange={setFormImageUrl}
         isPending={isPending}
         onSave={handleSaveProduct}
       />

@@ -43,6 +43,7 @@ import {
   PosShortcutsModal,
   PosCategorySlider,
 } from "@/components/pos";
+import { ProductImage } from "@/components/products";
 
 export default function PosPage() {
   const router = useRouter();
@@ -804,18 +805,29 @@ export default function PosPage() {
                       key={product.id}
                       onClick={() => addToCart(product)}
                       disabled={isOutOfStock}
-                      className={`group relative flex flex-col justify-between text-left p-3.5 rounded-md border bg-surface transition-all duration-100 min-h-[110px] ${isOutOfStock
-                          ? "opacity-45 cursor-not-allowed border-border bg-surface-subtle"
+                      className={`group relative flex flex-col justify-between text-left rounded-lg border bg-surface overflow-hidden transition-all duration-150 select-none ${
+                        isOutOfStock
+                          ? "opacity-50 cursor-not-allowed border-border bg-surface-subtle"
                           : inCartItem
-                            ? "border-accent ring-1 ring-accent bg-accent-light/10 shadow-xs"
-                            : "border-border hover:border-border-strong hover:shadow-2xs active:scale-[0.99]"
-                        }`}
+                          ? "border-accent ring-2 ring-accent/30 shadow-xs"
+                          : "border-border hover:border-text/30 hover:shadow-sm active:scale-[0.98]"
+                      }`}
                     >
-                      <div className="w-full">
-                        <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="text-[10px] font-mono font-medium text-text-muted uppercase tracking-tight truncate">
-                            {product.sku}
+                      {/* Top Image Container */}
+                      <div className="w-full h-32 sm:h-36 bg-surface-subtle relative overflow-hidden flex items-center justify-center p-2 border-b border-border-subtle/80">
+                        <ProductImage
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          iconClassName="w-8 h-8 text-text-faint"
+                        />
+
+                        {/* Badges Overlay */}
+                        <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                          <span className="text-[10px] font-semibold bg-surface/90 text-text px-1.5 py-0.5 rounded border border-border/70 shadow-2xs backdrop-blur-xs truncate max-w-[90px]">
+                            {product.category}
                           </span>
+
                           {isOutOfStock ? (
                             <Badge variant="danger" size="sm">
                               Habis
@@ -825,38 +837,45 @@ export default function PosPage() {
                               Sisa {product.stock}
                             </Badge>
                           ) : (
-                            <span className="text-[10px] text-text-muted font-mono">
+                            <span className="text-[10px] font-mono font-medium text-text-muted bg-surface/90 px-1.5 py-0.5 rounded border border-border/70 shadow-2xs backdrop-blur-xs">
                               {product.stock} {product.unit}
                             </span>
                           )}
                         </div>
 
-                        <h3 className="text-xs sm:text-sm font-semibold text-text leading-snug line-clamp-2">
-                          {product.name}
-                        </h3>
-
-                        <div className="mt-1">
-                          <span className="inline-block text-[10px] text-text-muted bg-surface-subtle px-1.5 py-0.5 rounded-sm">
-                            {product.category}
-                          </span>
-                        </div>
+                        {/* Cart Quantity Badge Overlay */}
+                        {inCartItem && (
+                          <div className="absolute bottom-2 right-2 pointer-events-none">
+                            <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-xs font-bold font-mono flex items-center gap-1 shadow-sm">
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              <span>{inCartItem.quantity}</span>
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between w-full">
-                        <span className="text-xs sm:text-sm font-bold text-text num font-mono">
-                          {formatRupiah(product.price)}
-                        </span>
+                      {/* Bottom Content Area */}
+                      <div className="p-3 flex-1 flex flex-col justify-between w-full">
+                        <div>
+                          <div className="text-[10px] font-mono text-text-muted truncate mb-0.5">
+                            {product.sku}
+                          </div>
+                          <h3 className="text-xs sm:text-sm font-semibold text-text leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                            {product.name}
+                          </h3>
+                        </div>
 
-                        {inCartItem ? (
-                          <span className="px-2 py-0.5 rounded bg-accent text-accent-foreground text-xs font-bold num font-mono flex items-center gap-1 shadow-2xs">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                            <span>{inCartItem.quantity}</span>
+                        <div className="mt-2.5 pt-2 border-t border-border-subtle flex items-center justify-between w-full">
+                          <span className="text-xs sm:text-sm font-bold text-text num font-mono">
+                            {formatRupiah(product.price)}
                           </span>
-                        ) : (
-                          <span className="w-6 h-6 rounded bg-surface-subtle group-hover:bg-primary group-hover:text-primary-foreground text-text-muted flex items-center justify-center transition-colors">
-                            <Plus className="w-3.5 h-3.5" />
-                          </span>
-                        )}
+
+                          {!isOutOfStock && !inCartItem && (
+                            <span className="w-6 h-6 rounded-md bg-surface-subtle group-hover:bg-primary group-hover:text-primary-foreground text-text-muted flex items-center justify-center transition-colors">
+                              <Plus className="w-3.5 h-3.5" />
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </button>
                   );
@@ -873,23 +892,34 @@ export default function PosPage() {
                     <div
                       key={product.id}
                       onClick={() => !isOutOfStock && addToCart(product)}
-                      className={`flex items-center justify-between p-3 transition-colors min-h-[48px] ${isOutOfStock
-                          ? "opacity-40 cursor-not-allowed bg-surface-subtle"
+                      className={`flex items-center justify-between p-2.5 sm:p-3 transition-colors ${
+                        isOutOfStock
+                          ? "opacity-50 cursor-not-allowed bg-surface-subtle"
                           : inCartItem
-                            ? "bg-accent-light/15 hover:bg-accent-light/25 cursor-pointer"
-                            : "hover:bg-surface-subtle/70 cursor-pointer"
-                        }`}
+                          ? "bg-accent-light/15 hover:bg-accent-light/25 cursor-pointer"
+                          : "hover:bg-surface-subtle/70 cursor-pointer"
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded bg-surface-subtle border border-border flex items-center justify-center text-text-muted font-bold text-xs shrink-0 font-mono">
-                          {product.sku.slice(-3)}
+                        <div className="w-12 h-12 rounded-md bg-surface-subtle border border-border overflow-hidden shrink-0 flex items-center justify-center p-1">
+                          <ProductImage
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-contain"
+                            iconClassName="w-5 h-5 text-text-faint"
+                            showFallbackText={false}
+                          />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-text truncate">{product.name}</p>
-                          <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
+                          <p className="text-xs sm:text-sm font-semibold text-text truncate">
+                            {product.name}
+                          </p>
+                          <div className="flex items-center gap-1.5 text-[10px] text-text-muted mt-0.5">
                             <span className="font-mono">{product.sku}</span>
                             <span>&bull;</span>
-                            <span>{product.category}</span>
+                            <span className="bg-surface-subtle px-1 py-0.2 rounded border border-border">
+                              {product.category}
+                            </span>
                             <span>&bull;</span>
                             {isOutOfStock ? (
                               <Badge variant="danger" size="sm">
@@ -908,13 +938,18 @@ export default function PosPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0">
                         <span className="text-xs sm:text-sm font-bold text-text num font-mono">
                           {formatRupiah(product.price)}
                         </span>
-                        {inCartItem && (
-                          <span className="px-2 py-0.5 rounded bg-accent text-accent-foreground text-xs font-bold num font-mono">
-                            {inCartItem.quantity}
+                        {inCartItem ? (
+                          <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-xs font-bold num font-mono flex items-center gap-1 shadow-2xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            <span>{inCartItem.quantity}</span>
+                          </span>
+                        ) : (
+                          <span className="w-7 h-7 rounded-md bg-surface-subtle border border-border text-text-muted flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors">
+                            <Plus className="w-3.5 h-3.5" />
                           </span>
                         )}
                       </div>

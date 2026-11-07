@@ -72,4 +72,3 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
     </div>
   );
 };
-
