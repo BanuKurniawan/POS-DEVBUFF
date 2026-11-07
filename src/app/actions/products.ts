@@ -32,7 +32,7 @@ export async function getProducts(): Promise<ProductDTO[]> {
     const products = await prisma.product.findMany({
       where: { isActive: true },
       include: { category: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { name: "asc" },
     });
 
     return products.map((p) => ({

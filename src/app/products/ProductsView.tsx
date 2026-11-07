@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useMemo } from "react";
 import { Plus, FolderTree } from "lucide-react";
 import {
   ProductDTO,
@@ -88,26 +88,30 @@ export default function ProductsView({
     }
   };
 
-  // Filter List Produk
-  const filteredProducts = products.filter((p) => {
-    const q = searchQuery.toLowerCase();
-    const matchSearch =
-      p.name.toLowerCase().includes(q) ||
-      p.sku.toLowerCase().includes(q) ||
-      (p.barcode && p.barcode.toLowerCase().includes(q));
+  // Filter & Urutkan List Produk Berdasarkan Abjad (A-Z)
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((p) => {
+        const q = searchQuery.toLowerCase();
+        const matchSearch =
+          p.name.toLowerCase().includes(q) ||
+          p.sku.toLowerCase().includes(q) ||
+          (p.barcode && p.barcode.toLowerCase().includes(q));
 
-    const matchCategory =
-      selectedCategory === "Semua" ||
-      p.category === selectedCategory ||
-      p.categoryId === selectedCategory;
+        const matchCategory =
+          selectedCategory === "Semua" ||
+          p.category === selectedCategory ||
+          p.categoryId === selectedCategory;
 
-    let matchStock = true;
-    if (stockFilter === "available") matchStock = p.stock > (p.minStock ?? 5);
-    if (stockFilter === "low") matchStock = p.stock > 0 && p.stock <= (p.minStock ?? 5);
-    if (stockFilter === "out") matchStock = p.stock <= 0;
+        let matchStock = true;
+        if (stockFilter === "available") matchStock = p.stock > (p.minStock ?? 5);
+        if (stockFilter === "low") matchStock = p.stock > 0 && p.stock <= (p.minStock ?? 5);
+        if (stockFilter === "out") matchStock = p.stock <= 0;
 
-    return matchSearch && matchCategory && matchStock;
-  });
+        return matchSearch && matchCategory && matchStock;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "id", { sensitivity: "base" }));
+  }, [products, searchQuery, selectedCategory, stockFilter]);
 
   const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= (p.minStock ?? 5)).length;
   const outOfStockCount = products.filter((p) => p.stock <= 0).length;

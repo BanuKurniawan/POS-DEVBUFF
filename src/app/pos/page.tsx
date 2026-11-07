@@ -204,16 +204,18 @@ export default function PosPage() {
     return () => clearTimeout(timer);
   }, [loadCatalog, loadHeldTransactions]);
 
-  // Filtered Products
+  // Filtered Products (Diurutkan berdasarkan abjad A-Z)
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const matchCategory = selectedCategory === "Semua" || p.category === selectedCategory;
-      const matchSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.barcode && p.barcode.includes(searchQuery));
-      return matchCategory && matchSearch;
-    });
+    return products
+      .filter((p) => {
+        const matchCategory = selectedCategory === "Semua" || p.category === selectedCategory;
+        const matchSearch =
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.barcode && p.barcode.includes(searchQuery));
+        return matchCategory && matchSearch;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "id", { sensitivity: "base" }));
   }, [products, selectedCategory, searchQuery]);
 
   const categoryCountMap = useMemo(() => {
