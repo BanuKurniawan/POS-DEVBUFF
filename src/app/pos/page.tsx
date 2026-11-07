@@ -139,9 +139,10 @@ export default function PosPage() {
       const [data, cats] = await Promise.all([getProducts(), getCategories()]);
       startTransition(() => {
         setProducts(data);
+        const rawCats = [...cats.map((c) => c.name?.trim()), ...data.map((p) => p.category?.trim())];
         const uniqueCats = [
           "Semua",
-          ...Array.from(new Set([...cats.map((c) => c.name), ...data.map((p) => p.category)])),
+          ...Array.from(new Set(rawCats.filter((name): name is string => Boolean(name) && name.toLowerCase() !== "semua"))),
         ];
         setCategories(uniqueCats);
       });

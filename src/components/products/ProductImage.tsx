@@ -17,23 +17,23 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   src,
   alt,
   className = "w-full h-full object-contain transition-transform duration-200",
-  containerClassName = "w-full h-full flex items-center justify-center bg-surface-subtle overflow-hidden",
+  containerClassName = "w-full h-full flex items-center justify-center bg-surface-subtle overflow-hidden relative",
   fallbackClassName = "w-full h-full flex flex-col items-center justify-center bg-surface-subtle text-text-muted p-2 select-none",
   iconClassName = "w-6 h-6 text-text-faint stroke-1",
   showFallbackText = true,
 }) => {
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState(!src);
 
   useEffect(() => {
-    setHasError(false);
+    setHasError(!src);
   }, [src]);
 
   if (!src || hasError) {
     return (
-      <div className={fallbackClassName} title={alt}>
-        <Package className={iconClassName} />
+      <div key="fallback" className={fallbackClassName} title={alt}>
+        <Package key="fallback-icon" className={iconClassName} />
         {showFallbackText && (
-          <span className="text-[9px] text-text-faint font-medium text-center line-clamp-1 mt-0.5 px-1">
+          <span key="fallback-text" className="text-[9px] text-text-faint font-medium text-center line-clamp-1 mt-0.5 px-1">
             {alt}
           </span>
         )}
@@ -42,8 +42,9 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   }
 
   return (
-    <div className={containerClassName}>
+    <div key="image-container" className={containerClassName}>
       <img
+        key="image-img"
         src={src}
         alt={alt}
         loading="lazy"
