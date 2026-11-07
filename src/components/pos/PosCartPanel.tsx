@@ -13,6 +13,7 @@ import {
   CreditCard,
   Building2,
   Check,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CartItem, PaymentMethod } from "@/types";
@@ -21,6 +22,7 @@ import { PosCartItem } from "./PosCartItem";
 
 interface PosCartPanelProps {
   isMobile?: boolean;
+  cashierName?: string;
   cart: CartItem[];
   totalCartItems: number;
   customerOrderNote: string;
@@ -61,6 +63,7 @@ interface PosCartPanelProps {
 
 export const PosCartPanel: React.FC<PosCartPanelProps> = ({
   isMobile = false,
+  cashierName,
   cart,
   totalCartItems,
   customerOrderNote,
@@ -158,6 +161,19 @@ export const PosCartPanel: React.FC<PosCartPanelProps> = ({
             placeholder="Pelanggan Umum..."
             className="w-full bg-transparent text-[11px] font-medium text-text focus:outline-hidden placeholder:text-text-faint"
           />
+        </div>
+
+        {/* Petugas Kasir Info */}
+        <div className="flex items-center justify-between text-[10px] px-0.5 pt-0.5 text-text-muted border-t border-border-subtle/80">
+          <div className="flex items-center gap-1 truncate">
+            <User className="w-3 h-3 text-accent shrink-0" />
+            <span>Kasir:</span>
+            <span className="font-bold text-text truncate max-w-[140px]">{cashierName || "Kasir"}</span>
+          </div>
+          <span className="text-[9px] text-accent font-medium flex items-center gap-1 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            Aktif
+          </span>
         </div>
       </div>
 

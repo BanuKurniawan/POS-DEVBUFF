@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Check,
   Copy,
+  User,
 } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +26,7 @@ interface PosPaymentConfirmModalProps {
   onCashGivenChange: (val: number) => void;
   changeAmount: number;
   storeName: string;
+  cashierName?: string;
   isSubmitting: boolean;
   onConfirmCheckout: () => void;
 }
@@ -40,6 +42,7 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
   onCashGivenChange,
   changeAmount,
   storeName,
+  cashierName,
   isSubmitting,
   onConfirmCheckout,
 }) => {
@@ -95,11 +98,19 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
               {formatRupiah(finalTotal)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-text-muted font-sans">Metode:</span>
-            <Badge variant="neutral" size="md" className="font-bold text-xs uppercase">
-              {paymentMethod}
-            </Badge>
+          <div className="flex flex-col sm:items-end gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-text-muted font-sans">Metode:</span>
+              <Badge variant="neutral" size="md" className="font-bold text-xs uppercase">
+                {paymentMethod}
+              </Badge>
+            </div>
+            {cashierName && (
+              <span className="text-[10px] text-text-muted font-sans flex items-center gap-1">
+                <User className="w-3 h-3 text-accent" />
+                <span>Kasir: <strong className="text-text">{cashierName}</strong></span>
+              </span>
+            )}
           </div>
         </div>
 

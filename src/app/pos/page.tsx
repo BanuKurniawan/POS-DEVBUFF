@@ -23,10 +23,12 @@ import {
   Plus,
   Package,
   ArrowRight,
+  User,
 } from "lucide-react";
 import { getProducts, getCategories } from "@/app/actions/products";
 import { processCheckout } from "@/app/actions/checkout";
 import { getStoreSetting } from "@/app/actions/settings";
+import { getSessionUser } from "@/app/actions/auth";
 import { SessionUser, DEMO_ACCOUNTS } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -101,7 +103,15 @@ export default function PosPage() {
     logoUrl: "",
     receiptFooter: "Terima kasih atas kunjungan Anda!",
   });
-  const [currentUser, setCurrentUser] = useState<SessionUser>(DEMO_ACCOUNTS[1] || DEMO_ACCOUNTS[0]);
+  const [currentUser, setCurrentUser] = useState<SessionUser>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kasir_session");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return DEMO_ACCOUNTS[1] || DEMO_ACCOUNTS[0];
+  });
 
   // Transaction Process & Modals
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -164,6 +174,18 @@ export default function PosPage() {
         startTransition(() => setStoreSetting(s));
       })
       .catch(console.error);
+
+    // Sinkronkan akun login dari server cookie session
+    getSessionUser()
+      .then((user) => {
+        if (user) {
+          startTransition(() => setCurrentUser(user));
+          try {
+            localStorage.setItem("kasir_session", JSON.stringify(user));
+          } catch {}
+        }
+      })
+      .catch(() => {});
 
     const saved = localStorage.getItem("kasir_session");
     if (saved) {
@@ -556,6 +578,7 @@ export default function PosPage() {
     cashInputRef,
     isPaymentValid,
     isSubmitting,
+    cashierName: currentUser?.name || "Kasir",
     onOpenPaymentConfirm: handleOpenPaymentConfirm,
   };
 
@@ -673,6 +696,30 @@ export default function PosPage() {
           >
             <HelpCircle className="w-4 h-4" />
           </button>
+
+          {/* Petugas Kasir Aktif Badge */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 bg-surface-subtle border border-border rounded-md shrink-0"
+            title={`Akun Kasir: ${currentUser?.name || "Kasir"} (${currentUser?.role || "KARYAWAN"})`}
+          >
+            <div className="w-5 h-5 rounded-full bg-accent-light text-accent border border-positive-border flex items-center justify-center font-bold text-[10px] shrink-0 select-none">
+              {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "K"}
+            </div>
+            <div className="leading-tight text-left min-w-0">
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-text truncate max-w-[75px] xs:max-w-[110px] sm:max-w-[140px]">
+                  {currentUser?.name || "Kasir"}
+                </span>
+                <span className="text-[8px] font-mono font-bold text-text-muted bg-surface px-1 py-0.2 rounded border border-border shrink-0 hidden xs:inline">
+                  {currentUser?.role === "OWNER" ? "Owner" : currentUser?.role === "ADMIN" ? "Admin" : "Kasir"}
+                </span>
+              </div>
+              <span className="text-[9px] text-accent font-medium hidden sm:flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-accent animate-pulse" />
+                Shift Berjaga
+              </span>
+            </div>
+          </div>
 
           {/* Return to Dashboard */}
           {(currentUser?.role === "OWNER" || currentUser?.role === "ADMIN") && (
@@ -1037,6 +1084,7 @@ export default function PosPage() {
         onCashGivenChange={setCashGiven}
         changeAmount={changeAmount}
         storeName={storeSetting.storeName}
+        cashierName={currentUser?.name || "Kasir"}
         isSubmitting={isSubmitting}
         onConfirmCheckout={executeFinalCheckout}
       />
