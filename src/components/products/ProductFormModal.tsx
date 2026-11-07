@@ -15,6 +15,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { NumberStepper } from "@/components/ui/NumberStepper";
 import { CategoryDTO, ProductDTO } from "@/types";
 import { ProductImage } from "./ProductImage";
 
@@ -412,6 +413,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             min="0"
             value={formCostPrice}
             onChange={(e) => onFormCostPriceChange(Math.max(0, Number(e.target.value)))}
+            leftIcon={<span className="text-xs font-bold text-text-muted font-mono">Rp</span>}
+            placeholder="0"
             tabular
             hint="Harga perolehan untuk menghitung laba kotor"
           />
@@ -423,6 +426,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             required
             value={formPrice}
             onChange={(e) => onFormPriceChange(Math.max(0, Number(e.target.value)))}
+            leftIcon={<span className="text-xs font-bold text-text-muted font-mono">Rp</span>}
+            placeholder="0"
             tabular
             hint="Harga yang dibayar pembeli di POS kasir"
           />
@@ -430,24 +435,22 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
         {/* STOK AWAL & MINIMUM */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border-subtle">
-          <Input
+          <NumberStepper
             label="Stok Awal Fisik"
-            type="number"
-            min="0"
+            min={0}
             required
             value={formStock}
-            onChange={(e) => onFormStockChange(Math.max(0, Number(e.target.value)))}
-            tabular
+            onChange={onFormStockChange}
+            unit={formUnit || "pcs"}
           />
 
-          <Input
+          <NumberStepper
             label="Batas Minimum Peringatan Stok"
-            type="number"
-            min="1"
+            min={1}
             required
             value={formMinStock}
-            onChange={(e) => onFormMinStockChange(Math.max(1, Number(e.target.value)))}
-            tabular
+            onChange={onFormMinStockChange}
+            unit={formUnit || "pcs"}
             hint="Peringatan muncul jika stok mencapai angka ini"
           />
         </div>

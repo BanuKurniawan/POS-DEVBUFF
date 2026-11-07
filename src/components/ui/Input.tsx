@@ -47,7 +47,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
-            className={`w-full bg-surface text-text placeholder:text-text-faint border transition-colors text-sm rounded-md h-9 px-3 focus:outline-hidden focus:border-text focus:ring-1 focus:ring-text disabled:bg-surface-subtle disabled:opacity-60 disabled:cursor-not-allowed ${
+            className={`w-full bg-surface text-text placeholder:text-text-faint border transition-colors text-sm rounded-md h-9 px-3 focus:outline-hidden focus:border-text focus:ring-1 focus:ring-text disabled:bg-surface-subtle disabled:opacity-60 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
               leftIcon ? "pl-9" : ""
             } ${rightIcon || rightElement ? "pr-9" : ""} ${
               error

@@ -320,15 +320,15 @@ export const PosCartPanel: React.FC<PosCartPanelProps> = ({
         {/* Cash Given & Quick Amount for TUNAI */}
         {paymentMethod === "TUNAI" ? (
           <div className="space-y-1 pt-0.5 border-t border-border-subtle">
-            <div className="flex items-center bg-surface border border-border rounded px-2 py-1 focus-within:border-text">
-              <span className="text-text-muted font-mono font-bold text-xs mr-1">Rp</span>
+            <div className="flex items-center bg-surface border border-border rounded px-2 py-1 focus-within:border-text focus-within:ring-1 focus-within:ring-text transition-colors">
+              <span className="text-text-muted font-mono font-bold text-xs mr-1 select-none">Rp</span>
               <input
                 ref={cashInputRef}
                 type="number"
                 value={cashGiven || ""}
                 onChange={(e) => onCashGivenChange(Math.max(0, Number(e.target.value)))}
                 placeholder="0"
-                className="w-full text-right font-mono num text-sm font-bold text-text bg-transparent focus:outline-hidden"
+                className="w-full text-right font-mono num text-sm font-bold text-text bg-transparent focus:outline-hidden [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 

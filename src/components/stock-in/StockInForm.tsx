@@ -4,6 +4,7 @@ import { ProductStockSelectDTO } from "@/types";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { NumberStepper } from "@/components/ui/NumberStepper";
 
 interface StockInFormProps {
   products: ProductStockSelectDTO[];
@@ -89,21 +90,19 @@ export const StockInForm: React.FC<StockInFormProps> = ({
           </div>
         )}
 
-        {/* Quantity Field */}
+        {/* Quantity Field dengan Stepper Kurang / Tambah */}
         <div className="space-y-2">
-          <Input
+          <NumberStepper
             label="Jumlah Masuk"
-            type="number"
-            min="1"
+            min={1}
             required
-            placeholder="Ketik jumlah item yang datang..."
-            value={quantity}
-            onChange={(e) => onQuantityChange(e.target.value)}
-            tabular
+            value={parseInt(quantity, 10) || 1}
+            onChange={(val) => onQuantityChange(String(val))}
+            unit={selectedProduct?.unit || "pcs"}
           />
 
           {/* Quick buttons */}
-          <div className="flex items-center gap-1.5 pt-0.5">
+          <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
             <span className="text-[11px] text-text-muted">Tambah Cepat:</span>
             {[5, 10, 20, 50, 100].map((val) => (
               <button

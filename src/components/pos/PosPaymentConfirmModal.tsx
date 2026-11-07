@@ -397,14 +397,14 @@ export const PosPaymentConfirmModal: React.FC<PosPaymentConfirmModalProps> = ({
               <label className="text-xs font-semibold text-text block">
                 Uang Tunai Diterima:
               </label>
-              <div className="flex items-center bg-surface border border-border rounded-md px-3 py-1.5">
-                <span className="text-text-muted font-mono font-bold text-xs mr-2">Rp</span>
+              <div className="flex items-center bg-surface border border-border rounded-md px-3 py-1.5 focus-within:border-text focus-within:ring-1 focus-within:ring-text transition-colors">
+                <span className="text-text-muted font-mono font-bold text-xs mr-2 select-none">Rp</span>
                 <input
                   type="number"
                   value={cashGiven || ""}
                   onChange={(e) => onCashGivenChange(Math.max(0, Number(e.target.value)))}
                   placeholder="0"
-                  className="w-full text-right font-mono num text-base font-bold text-text bg-transparent focus:outline-hidden"
+                  className="w-full text-right font-mono num text-base font-bold text-text bg-transparent focus:outline-hidden [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
 
