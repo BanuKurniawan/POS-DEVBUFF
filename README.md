@@ -1,4 +1,4 @@
-# KasirKITA — Sistem Point of Sales & Manajemen Stok UMKM
+﻿# KasirKITA — Sistem Point of Sales & Manajemen Stok UMKM
 
 Aplikasi kasir (Point of Sale) dan manajemen stok barang untuk toko sembako atau warung kelontong UMKM. Dibuat menggunakan **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, **MySQL 8.0**, dan **Prisma ORM**.
 
@@ -68,7 +68,7 @@ Aplikasi ini sudah dilengkapi sistem proteksi transaksi database *(idempotency k
 - **Framework**: Next.js 16 (App Router)
 - **UI & Bahasa**: React 19, TypeScript
 - **Styling**: Tailwind CSS v4
-- **Database**: MySQL 8.0 (Docker)
+- **Database**: MySQL 8.0 (XAMPP lokal)
 - **ORM**: Prisma ORM
 - **Icons**: Lucide React
 
@@ -79,8 +79,11 @@ Aplikasi ini sudah dilengkapi sistem proteksi transaksi database *(idempotency k
 Pastikan hal-hal berikut sudah terpasang di komputer:
 
 1. Node.js versi 20 ke atas.
-2. Docker Desktop (pastikan aplikasinya sudah dibuka dan aktif).
-3. Git.
+2. XAMPP Control Panel dengan layanan **MySQL** yang aktif.
+3. phpMyAdmin (tersedia bersama XAMPP).
+4. Git.
+
+> Project ini tidak memerlukan Docker Desktop untuk alur development lokal.
 
 ---
 
@@ -110,24 +113,36 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Isi default `.env`:
+Pastikan `.env` berisi koneksi MySQL XAMPP:
 ```env
-DATABASE_URL="mysql://root:rootpassword@localhost:3306/kasir_simpel"
+DATABASE_URL="mysql://root@127.0.0.1:3306/kasir_simpel"
 NEXTAUTH_SECRET="kunci_rahasia_bebas_diisi_apa_saja"
 NEXTAUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="KasirKITA"
 NODE_ENV="development"
 ```
 
-### 4. Setup database (Docker + Migrasi + Data Awal)
-Jalankan satu perintah ini:
+Jika MySQL XAMPP Anda menggunakan password, sesuaikan URL secara aman dengan URL encoding karakter khusus.
+
+### 4. Jalankan XAMPP dan buat database
+1. Buka **XAMPP Control Panel**.
+2. Klik **Start** pada layanan **MySQL**.
+3. Buka `http://localhost/phpmyadmin`.
+4. Buat database dengan nama `kasir_simpel` (collation: `utf8mb4_unicode_ci`).
+
+### 5. Setup database (migrasi + data awal)
+Jalankan perintah ini dari root project:
 ```bash
 npm run db:setup
 ```
 
-Perintah di atas akan otomatis menyalakan container MySQL & Adminer lewat Docker, membuat seluruh tabel migrasi, dan mengisi data awal (produk sembako, kategori, serta akun demo).
+Perintah di atas akan:
+- mengecek koneksi MySQL lokal,
+- menghasilkan Prisma Client,
+- menjalankan migrasi database,
+- mengisi data awal demo, tanpa menggunakan Docker.
 
-### 5. Jalankan aplikasi
+### 6. Jalankan aplikasi
 ```bash
 npm run dev
 ```
@@ -143,7 +158,7 @@ Buka browser dan buka **http://localhost:3000**.
 | **Owner** | `owner@kasir.com` | `owner123` | Akses semua menu (Dashboard, Laporan, Karyawan, Pengaturan) |
 | **Kasir** | `kasir@kasir.com` | `kasir123` | Transaksi POS, Stok Masuk, dan Riwayat Penjualan |
 
-*(Di halaman login juga disediakan tombol klik cepat untuk langsung masuk tanpa perlu ketik manual).*
+*(Di halaman login juga disediakan tombol klik cepat untuk langsung masuk tanpa perlu ketik manual).* 
 
 ---
 
@@ -152,24 +167,24 @@ Buka browser dan buka **http://localhost:3000**.
 | Perintah | Keterangan |
 |---|---|
 | `npm run dev` | Menjalankan server lokal (mode development) |
-| `npm run build` | Membuat build produksi yang sudah dioptimasi |
+| `npm run build` | Membangun aplikasi produksi (setelah generate Prisma) |
 | `npm run start` | Menjalankan aplikasi dari hasil build produksi |
-| `npm run db:setup` | Menyiapkan Docker, migrasi database, dan data demo |
-| `npm run db:up` | Menyalakan container Docker (MySQL & Adminer) |
-| `npm run db:down` | Mematikan container Docker |
+| `npm run db:setup` | Menyiapkan database XAMPP, migrasi, dan data demo |
+| `npm run db:generate` | Menghasilkan Prisma Client |
+| `npm run db:migrate` | Menjalankan migrasi Prisma dev |
+| `npm run db:studio` | Membuka Prisma Studio |
 | `npm run db:seed` | Mengisi ulang data contoh produk dan akun demo |
 | `npm run test:idempotency` | Menjalankan pengujian otomatis konkurensi & proteksi transaksi |
 
 ---
 
-## Melihat Database Langsung (Adminer)
+## Melihat Database Langsung (phpMyAdmin)
 
 Jika ingin melihat atau mengelola isi tabel database lewat antarmuka web:
-- **URL**: http://localhost:8080
-- **Sistem**: MySQL
-- **Server**: `mysql` *(gunakan `localhost` jika mengakses dari luar jaringan Docker)*
+- **URL**: http://localhost/phpmyadmin
+- **Server**: `localhost` atau `127.0.0.1`
 - **Username**: `root`
-- **Password**: `rootpassword`
+- **Password**: kosong (default XAMPP) atau sesuai konfigurasi yang Anda pakai
 - **Database**: `kasir_simpel`
 
 ---
